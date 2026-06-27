@@ -1,0 +1,13 @@
+[project]
+name = "loop-engineering"
+version = "0.1.0"
+description = "GitHub Issue based loop engineering helper scripts."
+requires-python = ">=3.11"
+dependencies = ["PyYAML>=6.0.1"]
+
+[project.optional-dependencies]
+test = ["pytest>=8.0.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
