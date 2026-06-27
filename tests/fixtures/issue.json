@@ -1,0 +1,16 @@
+{
+  "number": 123,
+  "title": "Fix login redirect",
+  "state": "OPEN",
+  "url": "https://github.com/example/repo/issues/123",
+  "labels": [
+    {"name": "loop:ready"},
+    {"name": "kind:bug"}
+  ],
+  "comments": [
+    {
+      "id": "IC_kwDO",
+      "body": "Initial report"
+    }
+  ]
+}
