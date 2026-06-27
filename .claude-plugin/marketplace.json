@@ -1,0 +1,21 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "loop-engineering",
+  "description": "Local marketplace for the Loop Engineering Claude Code plugin.",
+  "owner": {
+    "name": "HoMuChen"
+  },
+  "plugins": [
+    {
+      "name": "loop-engineering",
+      "description": "GitHub Issue based full-loop engineering workflows for Claude Code and Codex.",
+      "version": "0.1.0",
+      "author": {
+        "name": "HoMuChen"
+      },
+      "category": "development",
+      "source": ".",
+      "homepage": "https://github.com/HoMuChen/loop-engineering"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "name": "loop-engineering",
+  "version": "0.1.0",
+  "description": "GitHub Issue based full-loop engineering workflows for Claude Code and Codex.",
+  "author": {
+    "name": "HoMuChen"
+  },
+  "repository": "https://github.com/HoMuChen/loop-engineering",
+  "license": "MIT",
+  "keywords": [
+    "github-issues",
+    "agent-workflow",
+    "pull-requests",
+    "engineering-loop"
+  ]
+}

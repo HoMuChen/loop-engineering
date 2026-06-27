@@ -1,6 +1,6 @@
 ---
 name: loop-engineer-issue
-description: Use when asked to take a GitHub Issue through the full engineering loop: claim, plan, implement, verify, open PR, repair CI or review failures, merge, close, and clean up.
+description: "Use when asked to take a GitHub Issue through the full engineering loop: claim, plan, implement, verify, open PR, repair CI or review failures, merge, close, and clean up."
 ---
 
 # Loop Engineer Issue

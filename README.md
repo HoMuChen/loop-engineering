@@ -1,6 +1,6 @@
 # Loop Engineering
 
-Loop Engineering is a portable plugin for agentic software work managed through GitHub Issues.
+Loop Engineering is a portable Claude Code and Codex plugin for agentic software work managed through GitHub Issues.
 
 The v1 workflow uses:
 
@@ -24,11 +24,31 @@ The v1 workflow uses:
 - `loop-recover`: recover stale loop runs.
 - `loop-close`: finalize merged work.
 
+## Claude Code Installation
+
+Register this repository as a local marketplace, then install the plugin:
+
+```bash
+claude plugin marketplace add /Users/largitdata/project/loop-engineering
+claude plugin install loop-engineering@loop-engineering
+```
+
+Inside Claude Code, the same flow is available through slash commands:
+
+```text
+/plugin marketplace add /Users/largitdata/project/loop-engineering
+/plugin install loop-engineering@loop-engineering
+```
+
+Claude Code loads the plugin manifest from `.claude-plugin/plugin.json` and auto-discovers the skills in `skills/`.
+
 ## Local Verification
 
 ```bash
 python -m pytest -q
+claude plugin validate .
 python -m json.tool .codex-plugin/plugin.json
+python -m json.tool .agents/plugins/marketplace.json
 python scripts/loop_repo_policy.py
 ```
 
