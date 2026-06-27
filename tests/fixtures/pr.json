@@ -1,0 +1,11 @@
+{
+  "number": 55,
+  "title": "Fix login redirect",
+  "state": "OPEN",
+  "url": "https://github.com/example/repo/pull/55",
+  "mergeStateStatus": "CLEAN",
+  "reviewDecision": "APPROVED",
+  "statusCheckRollup": [
+    {"name": "test", "conclusion": "SUCCESS"}
+  ]
+}
