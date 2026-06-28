@@ -107,4 +107,33 @@ loop_engineering:
   auto_close: true
   local_repair_limit: 3
   pr_repair_limit: 2
+  max_concurrent_runs: 1
+  worktree_root: .loop/worktrees
 ```
+
+## Running on a Schedule
+
+The five skills are stages of a label-driven state machine, so they can run as independent scheduled jobs — GitHub Issue labels are the only shared state. A common layout:
+
+```cron
+# Prepare new issues
+*/15 * * * *  cd /path/to/repo && claude -p "Triage open loop engineering issues"
+# Work ready issues (parallel-safe via worktrees + max_concurrent_runs)
+*/7  * * * *  cd /path/to/repo && claude -p "Take the next ready loop engineering issue through the loop"
+# Review open loop PRs
+*/10 * * * *  cd /path/to/repo && claude -p "Review open loop engineering PRs"
+# Watchdog: recover stale runs and clean orphaned worktrees
+*/30 * * * *  cd /path/to/repo && claude -p "Recover stale loop engineering runs"
+```
+
+### Concurrency model
+
+`loop-engineer-issue` runs are parallel-safe: each works in its own git worktree under `worktree_root`, so concurrent runs never share a working tree. `max_concurrent_runs` caps how many run at once. It is a **soft cap** counted from the active loop labels (`loop:claimed`, `loop:in-progress`, `loop:repairing`), enforced optimistically — it can briefly overshoot when runs start in the same instant, but per-issue claiming stays exclusive, so no two runs ever touch the same issue.
+
+For a hard guarantee that only one run executes at a time (e.g. limited resources or shared state), keep `max_concurrent_runs: 1` and wrap the cron line in `flock`:
+
+```cron
+*/7 * * * * flock -n /tmp/loop-engineer.lock sh -c 'cd /path/to/repo && claude -p "Take the next ready loop engineering issue through the loop"'
+```
+
+`loop-recover` removes orphaned worktrees left by crashed or stale runs, which also frees their slot against the cap.

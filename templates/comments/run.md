@@ -3,6 +3,7 @@ Run: {{ run_id }}
 Agent: {{ agent }}
 Status: {{ status }}
 Branch: {{ branch }}
+Worktree: {{ worktree }}
 PR: {{ pr }}
 Started: {{ started }}
 Updated: {{ updated }}

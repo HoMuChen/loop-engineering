@@ -18,6 +18,8 @@ DEFAULT_POLICY: dict[str, Any] = {
     "auto_close": True,
     "local_repair_limit": 3,
     "pr_repair_limit": 2,
+    "max_concurrent_runs": 1,
+    "worktree_root": ".loop/worktrees",
 }
 
 
@@ -41,6 +43,12 @@ def load_policy(path: Path = Path(".loop-engineering.yml")) -> dict[str, Any]:
         raise ValueError("required_verification must be a list")
     if not isinstance(policy["protected_labels"], list):
         raise ValueError("protected_labels must be a list")
+    if not isinstance(policy["max_concurrent_runs"], int) or isinstance(policy["max_concurrent_runs"], bool):
+        raise ValueError("max_concurrent_runs must be an integer")
+    if policy["max_concurrent_runs"] < 1:
+        raise ValueError("max_concurrent_runs must be at least 1")
+    if not isinstance(policy["worktree_root"], str) or not policy["worktree_root"]:
+        raise ValueError("worktree_root must be a non-empty string")
     return policy
 
 
