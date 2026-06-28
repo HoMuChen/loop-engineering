@@ -14,6 +14,7 @@ def test_load_policy_uses_safe_defaults_when_file_missing(tmp_path: Path):
     assert "security" in policy["protected_labels"]
     assert policy["max_concurrent_runs"] == 1
     assert policy["worktree_root"] == ".loop/worktrees"
+    assert policy["intake_issue_limit"] == 10
 
 
 def test_load_policy_merges_concurrency_config(tmp_path: Path):
@@ -23,6 +24,7 @@ def test_load_policy_merges_concurrency_config(tmp_path: Path):
 loop_engineering:
   max_concurrent_runs: 3
   worktree_root: .cache/worktrees
+  intake_issue_limit: 25
 """,
         encoding="utf-8",
     )
@@ -31,6 +33,7 @@ loop_engineering:
 
     assert policy["max_concurrent_runs"] == 3
     assert policy["worktree_root"] == ".cache/worktrees"
+    assert policy["intake_issue_limit"] == 25
 
 
 def test_load_policy_rejects_non_positive_concurrency(tmp_path: Path):

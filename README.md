@@ -18,11 +18,14 @@ The v1 workflow uses:
 
 ## Skills
 
-- `loop-engineer-issue`: full issue loop from claim through close.
+- `loop-intake-quality`: scan the repo and file quality/safety findings as ready issues.
 - `loop-triage`: classify and prepare issues.
+- `loop-engineer-issue`: full issue loop from claim through close.
 - `loop-review-pr`: review loop PRs.
 - `loop-recover`: recover stale loop runs.
 - `loop-close`: finalize merged work.
+
+The loop is reactive to GitHub Issues. `loop-intake-quality` is the source that generates quality-driven work (security, vulnerabilities, bugs, UI/UX); everything else consumes existing issues.
 
 ## Claude Code Installation
 
@@ -61,6 +64,7 @@ The skills are activated by natural language. Once installed in either tool, des
 
 | Goal | Prompt | Skill |
 | --- | --- | --- |
+| Generate quality/safety issues from the code | `Scan this repo for quality and security issues` | `loop-intake-quality` |
 | Prepare new issues for agents | `Triage open loop engineering issues` | `loop-triage` |
 | Run an issue end-to-end | `Take GitHub issue #123 through the loop` | `loop-engineer-issue` |
 | Review an open loop PR | `Review loop engineering PR #45` | `loop-review-pr` |
@@ -116,6 +120,8 @@ loop_engineering:
 The five skills are stages of a label-driven state machine, so they can run as independent scheduled jobs — GitHub Issue labels are the only shared state. A common layout:
 
 ```cron
+# Generate quality/safety issues from the codebase (nightly is plenty)
+0 3 * * *     cd /path/to/repo && claude -p "Scan this repo for quality and security issues"
 # Prepare new issues
 */15 * * * *  cd /path/to/repo && claude -p "Triage open loop engineering issues"
 # Work ready issues (parallel-safe via worktrees + max_concurrent_runs)

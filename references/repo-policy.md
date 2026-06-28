@@ -20,6 +20,7 @@ loop_engineering:
   pr_repair_limit: 2
   max_concurrent_runs: 1
   worktree_root: .loop/worktrees
+  intake_issue_limit: 10
 ```
 
 `auto_merge` defaults to false. Repositories must opt in to automatic merging.
@@ -27,3 +28,5 @@ loop_engineering:
 `max_concurrent_runs` defaults to 1 (effectively serial). Raise it to allow that many `loop-engineer-issue` runs to work in parallel, each in its own git worktree. It is a soft cap counted from the active loop labels, so it can briefly overshoot when runs start simultaneously; per-issue claiming stays exclusive.
 
 `worktree_root` is where parallel runs create their isolated worktrees (default `.loop/worktrees`, which should be gitignored). `loop-recover` cleans orphaned worktrees here.
+
+`intake_issue_limit` caps how many issues `loop-intake-quality` files per scan (default 10), so a scan cannot flood the backlog. Findings beyond the cap are reported, not silently dropped.

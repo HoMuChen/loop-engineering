@@ -20,6 +20,7 @@ DEFAULT_POLICY: dict[str, Any] = {
     "pr_repair_limit": 2,
     "max_concurrent_runs": 1,
     "worktree_root": ".loop/worktrees",
+    "intake_issue_limit": 10,
 }
 
 
@@ -49,6 +50,10 @@ def load_policy(path: Path = Path(".loop-engineering.yml")) -> dict[str, Any]:
         raise ValueError("max_concurrent_runs must be at least 1")
     if not isinstance(policy["worktree_root"], str) or not policy["worktree_root"]:
         raise ValueError("worktree_root must be a non-empty string")
+    if not isinstance(policy["intake_issue_limit"], int) or isinstance(policy["intake_issue_limit"], bool):
+        raise ValueError("intake_issue_limit must be an integer")
+    if policy["intake_issue_limit"] < 1:
+        raise ValueError("intake_issue_limit must be at least 1")
     return policy
 
 
