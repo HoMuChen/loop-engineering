@@ -29,14 +29,14 @@ The v1 workflow uses:
 Register this repository as a local marketplace, then install the plugin:
 
 ```bash
-claude plugin marketplace add /Users/largitdata/project/loop-engineering
+claude plugin marketplace add HoMuChen/loop-engineering
 claude plugin install loop-engineering@loop-engineering
 ```
 
 Inside Claude Code, the same flow is available through slash commands:
 
 ```text
-/plugin marketplace add /Users/largitdata/project/loop-engineering
+/plugin marketplace add HoMuChen/loop-engineering
 /plugin install loop-engineering@loop-engineering
 ```
 
@@ -49,7 +49,7 @@ Codex discovers the plugin from the agents marketplace defined in `.agents/plugi
 Register this repository as a marketplace source and install the plugin:
 
 ```bash
-codex plugin marketplace add /Users/largitdata/project/loop-engineering
+codex plugin marketplace add HoMuChen/loop-engineering
 codex plugin install loop-engineering
 ```
 
