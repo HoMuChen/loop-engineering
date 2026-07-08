@@ -19,6 +19,15 @@ Product OS adds a product-management layer above the GitHub Issue engineering lo
   release-notes/
 ```
 
+## Initialization
+
+Initialize Product OS in two phases:
+
+1. Run the deterministic init helper to create the safe `.product/` skeleton without overwriting existing files.
+2. Inspect the codebase and existing project materials, then discuss a proposed product brief and roadmap with the user before writing product strategy.
+
+The init helper should not infer strategy by itself. The agent using `loop-product-init` should cite repo evidence, separate assumptions, ask clarifying questions, and write non-placeholder product content only after explicit approval.
+
 ## Authority Boundary
 
 Human owners decide why, what, priority, scope, tradeoffs, and approval for high-risk work.

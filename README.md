@@ -24,7 +24,7 @@ The Product OS layer adds:
 
 ## Skills
 
-- `loop-product-init`: initialize or repair `.product/`.
+- `loop-product-init`: initialize or repair `.product/`, inspect the repo, and guide the first product brief / roadmap draft.
 - `loop-product-review`: summarize product progress, blockers, risks, and next steps.
 - `loop-spec-feature`: draft feature specs from roadmap items.
 - `loop-split-feature`: split approved specs into work items and optionally prepared issues.
@@ -81,7 +81,7 @@ codex exec "Review the current Product OS status"
 
 | Goal | Prompt | Skill |
 | --- | --- | --- |
-| Initialize Product OS | `Initialize Product OS for this repo` | `loop-product-init` |
+| Initialize Product OS | `Initialize Product OS for this repo and draft it from the codebase` | `loop-product-init` |
 | Review product progress | `Review the current Product OS status` | `loop-product-review` |
 | Draft a feature spec | `Draft the next Product OS feature spec` | `loop-spec-feature` |
 | Split an approved feature | `Split the approved feature into work items` | `loop-split-feature` |
@@ -97,22 +97,23 @@ codex exec "Review the current Product OS status"
 Use the plugin as a product-to-PR pipeline:
 
 1. `loop-product-init` creates `.product/` for product-driven repositories.
-2. A human fills in `.product/product-brief.md` and `.product/roadmap.yaml`.
-3. `loop-spec-feature` drafts specs for roadmap items with `needs-spec`.
-4. A human reviews the spec and changes its status to `spec-approved` or `ready-for-build`.
-5. `loop-split-feature` splits approved specs into small work items and, when allowed, GitHub Issues.
-6. `loop-triage` scans open issues, applies `kind:*` / priority / area labels, and marks actionable issues `loop:ready`.
-7. `loop-engineer-issue` claims one `loop:ready` issue, plans, implements, verifies, opens a PR, repairs CI or review failures, then merges when policy allows.
-8. `loop-review-pr` reviews the PR bug-first and routes it back to repair or to a human when needed.
-9. `loop-recover` reconciles issue labels against branch, PR, CI, and review state for stale runs.
-10. `loop-close` adds a final summary, cleans transient labels, and closes completed issues.
-11. `loop-product-review` summarizes product progress, blockers, risks, and recommended next steps.
+2. `loop-product-init` inspects the codebase, drafts product brief / roadmap content, and asks a human to confirm assumptions.
+3. A human approves or corrects `.product/product-brief.md` and `.product/roadmap.yaml`.
+4. `loop-spec-feature` drafts specs for roadmap items with `needs-spec`.
+5. A human reviews the spec and changes its status to `spec-approved` or `ready-for-build`.
+6. `loop-split-feature` splits approved specs into small work items and, when allowed, GitHub Issues.
+7. `loop-triage` scans open issues, applies `kind:*` / priority / area labels, and marks actionable issues `loop:ready`.
+8. `loop-engineer-issue` claims one `loop:ready` issue, plans, implements, verifies, opens a PR, repairs CI or review failures, then merges when policy allows.
+9. `loop-review-pr` reviews the PR bug-first and routes it back to repair or to a human when needed.
+10. `loop-recover` reconciles issue labels against branch, PR, CI, and review state for stale runs.
+11. `loop-close` adds a final summary, cleans transient labels, and closes completed issues.
+12. `loop-product-review` summarizes product progress, blockers, risks, and recommended next steps.
 
 ### Recommended cadence
 
 | Skill | Trigger | Suggested cadence | Writes |
 | --- | --- | --- | --- |
-| `loop-product-init` | `Initialize Product OS for this repo` | Once per repo, then only when repairing missing Product OS files | `.product/` skeleton |
+| `loop-product-init` | `Initialize Product OS for this repo and draft it from the codebase` | Once per repo, then only when repairing missing Product OS files | `.product/` skeleton, then approved product brief / roadmap content |
 | `loop-product-review` | `Review the current Product OS status` | Daily or weekly; also before planning sessions | Report only by default |
 | `loop-spec-feature` | `Draft the next Product OS feature spec` | Daily or on demand while roadmap has `needs-spec` items | `.product/feature-specs/*.yaml` |
 | `loop-split-feature` | `Split the approved feature into work items` | After human spec approval | `.product/work-items/*.yaml`, optional GitHub Issues |
@@ -128,21 +129,23 @@ Use the plugin as a product-to-PR pipeline:
 After installing the plugin in Claude Code or Codex, go to the target product repository and run:
 
 ```bash
-claude -p "Initialize Product OS for this repo"
+claude -p "Initialize Product OS for this repo and draft it from the codebase"
 ```
 
 or:
 
 ```bash
-codex exec "Initialize Product OS for this repo"
+codex exec "Initialize Product OS for this repo and draft it from the codebase"
 ```
 
-Then edit:
+The init agent first creates the `.product/` skeleton, then inspects the codebase and existing docs to propose initial content for:
 
 ```text
 .product/product-brief.md
 .product/roadmap.yaml
 ```
+
+It should separate repo-backed facts from assumptions, ask you to confirm target users / MVP scope / non-goals when unclear, and only write non-placeholder product strategy after approval.
 
 Set roadmap items to statuses such as `needs-spec`, `spec-approved`, or `ready-for-build`. Product OS skills can draft and split work, but humans should approve product priority, MVP scope, and high-risk features.
 
@@ -207,6 +210,8 @@ python scripts/loop_product_os.py init --root .
 python scripts/loop_product_os.py validate --root .
 python scripts/loop_product_os.py status --root . --json
 ```
+
+The helper script only creates and validates structure. The `loop-product-init` skill is responsible for repo discovery, user discussion, and approved product content updates.
 
 Behavior is governed per repository by `.loop-engineering.yml` (see [Repository Policy](#repository-policy)). Before doing anything, the skills run `gh auth status`, confirm a GitHub remote exists, and read repository instructions (`AGENTS.md`, `CLAUDE.md`) plus the policy file.
 
