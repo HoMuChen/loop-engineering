@@ -13,6 +13,7 @@
     "product-os",
     "github-issues",
     "roadmap",
+    "roadmap-update",
     "feature-specs",
     "agent-workflow",
     "pull-requests",
@@ -36,6 +37,7 @@
     "defaultPrompt": [
       "Initialize Product OS for this repo",
       "Review the current Product OS status",
+      "Update Product OS roadmap",
       "Draft the next Product OS feature spec",
       "Triage open loop engineering issues",
       "Take this GitHub issue through the loop",

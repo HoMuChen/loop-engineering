@@ -36,6 +36,8 @@ Agents may draft specs, split approved specs into work items, update implementat
 
 Agents must not independently move features into Now, raise priority, expand MVP scope, approve high-risk features, change billing or permission direction, or deploy to production.
 
+Use `loop-roadmap-update` for explicit user-approved roadmap edits. Vague requests such as "what should we do next?" should produce recommendations rather than direct file edits.
+
 ## Roadmap Sections
 
 - `now`: Current product focus. Only approved or ready features in this section may move toward build.
