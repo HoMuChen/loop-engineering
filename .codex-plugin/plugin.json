@@ -1,7 +1,7 @@
 {
   "name": "loop-engineering",
   "version": "0.1.0",
-  "description": "GitHub Issue based full-loop engineering workflows for Codex and Claude Code.",
+  "description": "Product OS and GitHub Issue based full-loop engineering workflows for Codex and Claude Code.",
   "author": {
     "name": "HoMuChen",
     "url": "https://github.com/HoMuChen"
@@ -10,7 +10,10 @@
   "repository": "https://github.com/HoMuChen/loop-engineering",
   "license": "MIT",
   "keywords": [
+    "product-os",
     "github-issues",
+    "roadmap",
+    "feature-specs",
     "agent-workflow",
     "pull-requests",
     "engineering-loop"
@@ -18,8 +21,8 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Loop Engineering",
-    "shortDescription": "Run GitHub Issue based engineering loops",
-    "longDescription": "Use Loop Engineering to triage GitHub Issues, claim ready work, implement and verify changes, open and review pull requests, recover stale runs, and close completed issues with structured run metadata.",
+    "shortDescription": "Run Product OS and GitHub Issue engineering loops",
+    "longDescription": "Use Loop Engineering to initialize Product OS, draft feature specs, split approved specs into work items, triage GitHub Issues, claim ready work, implement and verify changes, open and review pull requests, recover stale runs, and close completed issues with structured run metadata.",
     "developerName": "HoMuChen",
     "category": "Developer Tools",
     "capabilities": [
@@ -31,6 +34,9 @@
     "privacyPolicyURL": "https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement",
     "termsOfServiceURL": "https://docs.github.com/en/site-policy/github-terms/github-terms-of-service",
     "defaultPrompt": [
+      "Initialize Product OS for this repo",
+      "Review the current Product OS status",
+      "Draft the next Product OS feature spec",
       "Triage open loop engineering issues",
       "Take this GitHub issue through the loop",
       "Review this loop engineering PR"

@@ -1,14 +1,20 @@
 # Loop Engineering
 
-Loop Engineering is a portable Claude Code and Codex plugin for agentic software work managed through GitHub Issues.
+Loop Engineering is a portable Claude Code and Codex plugin for agentic software work managed through GitHub Issues, with an optional Product OS layer for turning product strategy into scoped engineering work.
 
-The v1 workflow uses:
+The engineering loop uses:
 
 - GitHub Issues as the source of truth.
 - Labels for current workflow state.
 - Structured issue comments for run metadata.
 - GitHub CLI (`gh`) for all GitHub operations.
 - Python helper scripts that emit stable JSON.
+
+The Product OS layer adds:
+
+- `.product/` as the product source of truth.
+- Roadmap, feature specs, work items, decisions, feedback, metrics, and release notes.
+- A guarded path from product intent to ready GitHub Issues.
 
 ## Requirements
 
@@ -18,6 +24,10 @@ The v1 workflow uses:
 
 ## Skills
 
+- `loop-product-init`: initialize or repair `.product/`.
+- `loop-product-review`: summarize product progress, blockers, risks, and next steps.
+- `loop-spec-feature`: draft feature specs from roadmap items.
+- `loop-split-feature`: split approved specs into work items and optionally prepared issues.
 - `loop-intake-quality`: scan the repo and file quality/safety findings as ready issues.
 - `loop-triage`: classify and prepare issues.
 - `loop-engineer-issue`: full issue loop from claim through close.
@@ -25,7 +35,7 @@ The v1 workflow uses:
 - `loop-recover`: recover stale loop runs.
 - `loop-close`: finalize merged work.
 
-The loop is reactive to GitHub Issues. `loop-intake-quality` is the source that generates quality-driven work (security, vulnerabilities, bugs, UI/UX); everything else consumes existing issues.
+The loop is reactive to GitHub Issues. `loop-intake-quality` generates quality-driven work (security, vulnerabilities, bugs, UI/UX). Product OS skills generate product-driven specs and work items, then hand execution to GitHub Issues instead of bypassing the issue loop.
 
 ## Claude Code Installation
 
@@ -64,6 +74,10 @@ The skills are activated by natural language. Once installed in either tool, des
 
 | Goal | Prompt | Skill |
 | --- | --- | --- |
+| Initialize Product OS | `Initialize Product OS for this repo` | `loop-product-init` |
+| Review product progress | `Review the current Product OS status` | `loop-product-review` |
+| Draft a feature spec | `Draft the next Product OS feature spec` | `loop-spec-feature` |
+| Split an approved feature | `Split the approved feature into work items` | `loop-split-feature` |
 | Generate quality/safety issues from the code | `Scan this repo for quality and security issues` | `loop-intake-quality` |
 | Prepare new issues for agents | `Triage open loop engineering issues` | `loop-triage` |
 | Run an issue end-to-end | `Take GitHub issue #123 through the loop` | `loop-engineer-issue` |
@@ -73,11 +87,41 @@ The skills are activated by natural language. Once installed in either tool, des
 
 A typical full loop:
 
-1. `loop-triage` scans open issues, applies `kind:*` / priority / area labels, and marks ready issues `loop:ready`.
-2. `loop-engineer-issue` claims a `loop:ready` issue, plans, implements, verifies, opens a PR, repairs CI or review failures, then merges.
-3. `loop-review-pr` reviews the PR bug-first and routes it back to repair or to a human when needed.
-4. `loop-recover` reconciles issue labels against branch, PR, CI, and review state for any stale runs.
-5. `loop-close` adds a final summary, cleans transient labels, and closes the issue.
+1. `loop-product-init` creates `.product/` for product-driven repositories.
+2. `loop-spec-feature` drafts feature specs from roadmap items that need specs.
+3. `loop-split-feature` splits approved specs into small work items and prepared issues.
+4. `loop-triage` scans open issues, applies `kind:*` / priority / area labels, and marks ready issues `loop:ready`.
+5. `loop-engineer-issue` claims a `loop:ready` issue, plans, implements, verifies, opens a PR, repairs CI or review failures, then merges.
+6. `loop-review-pr` reviews the PR bug-first and routes it back to repair or to a human when needed.
+7. `loop-recover` reconciles issue labels against branch, PR, CI, and review state for any stale runs.
+8. `loop-close` adds a final summary, cleans transient labels, and closes the issue.
+
+## Product OS
+
+Product OS is optional but recommended for autonomous product development. It makes product context explicit before coding starts:
+
+```text
+.product/
+  product-os.yaml
+  product-brief.md
+  roadmap.yaml
+  feature-specs/
+  work-items/
+  decisions/
+  feedback/
+  metrics.md
+  release-notes/
+```
+
+Use `.product/` as the product source of truth and GitHub Issues as the execution source of truth. Agents may draft specs, split approved specs, update progress from facts, summarize feedback, and recommend roadmap changes. Agents must not independently change product priority, expand MVP scope, approve high-risk work, or implement directly from roadmap entries.
+
+Initialize it with:
+
+```bash
+python scripts/loop_product_os.py init --root .
+python scripts/loop_product_os.py validate --root .
+python scripts/loop_product_os.py status --root . --json
+```
 
 Behavior is governed per repository by `.loop-engineering.yml` (see [Repository Policy](#repository-policy)). Before doing anything, the skills run `gh auth status`, confirm a GitHub remote exists, and read repository instructions (`AGENTS.md`, `CLAUDE.md`) plus the policy file.
 
@@ -89,6 +133,8 @@ claude plugin validate .
 python -m json.tool .codex-plugin/plugin.json
 python -m json.tool .agents/plugins/marketplace.json
 python scripts/loop_repo_policy.py
+python scripts/loop_product_os.py init --root /tmp/loop-product-os-check
+python scripts/loop_product_os.py validate --root /tmp/loop-product-os-check
 ```
 
 ## Repository Policy

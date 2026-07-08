@@ -1,14 +1,17 @@
 {
   "name": "loop-engineering",
   "version": "0.1.0",
-  "description": "GitHub Issue based full-loop engineering workflows for Claude Code and Codex.",
+  "description": "Product OS and GitHub Issue based full-loop engineering workflows for Claude Code and Codex.",
   "author": {
     "name": "HoMuChen"
   },
   "repository": "https://github.com/HoMuChen/loop-engineering",
   "license": "MIT",
   "keywords": [
+    "product-os",
     "github-issues",
+    "roadmap",
+    "feature-specs",
     "agent-workflow",
     "pull-requests",
     "engineering-loop"
