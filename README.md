@@ -70,7 +70,14 @@ Codex loads the manifest from `.codex-plugin/plugin.json` and auto-discovers the
 
 ## Usage
 
-The skills are activated by natural language. Once installed in either tool, describe the task and the matching skill loads automatically. Suggested starting prompts:
+The skills are activated by natural language. Once installed in either tool, describe the task and the matching skill loads automatically. You can run prompts interactively, or non-interactively from a scheduler:
+
+```bash
+claude -p "Review the current Product OS status"
+codex exec "Review the current Product OS status"
+```
+
+### Skill triggers
 
 | Goal | Prompt | Skill |
 | --- | --- | --- |
@@ -85,16 +92,94 @@ The skills are activated by natural language. Once installed in either tool, des
 | Resume or unblock stuck runs | `Recover stale loop engineering runs` | `loop-recover` |
 | Finalize merged work | `Close loop engineering issue #123` | `loop-close` |
 
-A typical full loop:
+### Operating cycle
+
+Use the plugin as a product-to-PR pipeline:
 
 1. `loop-product-init` creates `.product/` for product-driven repositories.
-2. `loop-spec-feature` drafts feature specs from roadmap items that need specs.
-3. `loop-split-feature` splits approved specs into small work items and prepared issues.
-4. `loop-triage` scans open issues, applies `kind:*` / priority / area labels, and marks ready issues `loop:ready`.
-5. `loop-engineer-issue` claims a `loop:ready` issue, plans, implements, verifies, opens a PR, repairs CI or review failures, then merges.
-6. `loop-review-pr` reviews the PR bug-first and routes it back to repair or to a human when needed.
-7. `loop-recover` reconciles issue labels against branch, PR, CI, and review state for any stale runs.
-8. `loop-close` adds a final summary, cleans transient labels, and closes the issue.
+2. A human fills in `.product/product-brief.md` and `.product/roadmap.yaml`.
+3. `loop-spec-feature` drafts specs for roadmap items with `needs-spec`.
+4. A human reviews the spec and changes its status to `spec-approved` or `ready-for-build`.
+5. `loop-split-feature` splits approved specs into small work items and, when allowed, GitHub Issues.
+6. `loop-triage` scans open issues, applies `kind:*` / priority / area labels, and marks actionable issues `loop:ready`.
+7. `loop-engineer-issue` claims one `loop:ready` issue, plans, implements, verifies, opens a PR, repairs CI or review failures, then merges when policy allows.
+8. `loop-review-pr` reviews the PR bug-first and routes it back to repair or to a human when needed.
+9. `loop-recover` reconciles issue labels against branch, PR, CI, and review state for stale runs.
+10. `loop-close` adds a final summary, cleans transient labels, and closes completed issues.
+11. `loop-product-review` summarizes product progress, blockers, risks, and recommended next steps.
+
+### Recommended cadence
+
+| Skill | Trigger | Suggested cadence | Writes |
+| --- | --- | --- | --- |
+| `loop-product-init` | `Initialize Product OS for this repo` | Once per repo, then only when repairing missing Product OS files | `.product/` skeleton |
+| `loop-product-review` | `Review the current Product OS status` | Daily or weekly; also before planning sessions | Report only by default |
+| `loop-spec-feature` | `Draft the next Product OS feature spec` | Daily or on demand while roadmap has `needs-spec` items | `.product/feature-specs/*.yaml` |
+| `loop-split-feature` | `Split the approved feature into work items` | After human spec approval | `.product/work-items/*.yaml`, optional GitHub Issues |
+| `loop-intake-quality` | `Scan this repo for quality and security issues` | Nightly or weekly | GitHub Issues |
+| `loop-triage` | `Triage open loop engineering issues` | Every 15-30 minutes, or before build runs | GitHub labels/comments |
+| `loop-engineer-issue` | `Take the next ready loop engineering issue through the loop` | Every 5-15 minutes, capped by `max_concurrent_runs` | Branches, PRs, labels/comments |
+| `loop-review-pr` | `Review open loop engineering PRs` | Every 10-30 minutes | PR review comments, labels |
+| `loop-recover` | `Recover stale loop engineering runs` | Every 30-60 minutes | Labels/comments, worktree cleanup |
+| `loop-close` | `Close completed loop engineering issues` | Every 30-60 minutes, or after merge | Issue comments/labels/close |
+
+### First-time setup for a product repo
+
+After installing the plugin in Claude Code or Codex, go to the target product repository and run:
+
+```bash
+claude -p "Initialize Product OS for this repo"
+```
+
+or:
+
+```bash
+codex exec "Initialize Product OS for this repo"
+```
+
+Then edit:
+
+```text
+.product/product-brief.md
+.product/roadmap.yaml
+```
+
+Set roadmap items to statuses such as `needs-spec`, `spec-approved`, or `ready-for-build`. Product OS skills can draft and split work, but humans should approve product priority, MVP scope, and high-risk features.
+
+### Typical product development flow
+
+```bash
+# 1. Draft a spec from roadmap.needs-spec
+claude -p "Draft the next Product OS feature spec"
+
+# 2. After human review and approval, split the feature
+claude -p "Split the approved feature into work items"
+
+# 3. Prepare GitHub Issues for execution
+claude -p "Triage open loop engineering issues"
+
+# 4. Build one ready issue
+claude -p "Take the next ready loop engineering issue through the loop"
+
+# 5. Review and recover
+claude -p "Review open loop engineering PRs"
+claude -p "Recover stale loop engineering runs"
+
+# 6. Summarize product state
+claude -p "Review the current Product OS status"
+```
+
+Codex equivalent:
+
+```bash
+codex exec "Draft the next Product OS feature spec"
+codex exec "Split the approved feature into work items"
+codex exec "Triage open loop engineering issues"
+codex exec "Take the next ready loop engineering issue through the loop"
+codex exec "Review open loop engineering PRs"
+codex exec "Recover stale loop engineering runs"
+codex exec "Review the current Product OS status"
+```
 
 ## Product OS
 
@@ -163,9 +248,17 @@ loop_engineering:
 
 ## Running on a Schedule
 
-The five skills are stages of a label-driven state machine, so they can run as independent scheduled jobs — GitHub Issue labels are the only shared state. A common layout:
+The skills are stages of a Product OS plus label-driven state machine, so they can run as independent scheduled jobs. `.product/` stores product context, while GitHub Issue labels are the shared execution state.
+
+Claude Code example:
 
 ```cron
+# Product review (daily)
+0 9 * * *      cd /path/to/repo && claude -p "Review the current Product OS status"
+# Draft feature specs while roadmap has needs-spec items (daily)
+15 9 * * *     cd /path/to/repo && claude -p "Draft the next Product OS feature spec"
+# Split approved specs into work items / prepared issues (hourly)
+0 * * * *      cd /path/to/repo && claude -p "Split the approved feature into work items"
 # Generate quality/safety issues from the codebase (nightly is plenty)
 0 3 * * *     cd /path/to/repo && claude -p "Scan this repo for quality and security issues"
 # Prepare new issues
@@ -176,6 +269,22 @@ The five skills are stages of a label-driven state machine, so they can run as i
 */10 * * * *  cd /path/to/repo && claude -p "Review open loop engineering PRs"
 # Watchdog: recover stale runs and clean orphaned worktrees
 */30 * * * *  cd /path/to/repo && claude -p "Recover stale loop engineering runs"
+# Close completed merged work
+*/45 * * * *  cd /path/to/repo && claude -p "Close completed loop engineering issues"
+```
+
+Codex example:
+
+```cron
+0 9 * * *      cd /path/to/repo && codex exec "Review the current Product OS status"
+15 9 * * *     cd /path/to/repo && codex exec "Draft the next Product OS feature spec"
+0 * * * *      cd /path/to/repo && codex exec "Split the approved feature into work items"
+0 3 * * *      cd /path/to/repo && codex exec "Scan this repo for quality and security issues"
+*/15 * * * *   cd /path/to/repo && codex exec "Triage open loop engineering issues"
+*/7  * * * *   cd /path/to/repo && codex exec "Take the next ready loop engineering issue through the loop"
+*/10 * * * *   cd /path/to/repo && codex exec "Review open loop engineering PRs"
+*/30 * * * *   cd /path/to/repo && codex exec "Recover stale loop engineering runs"
+*/45 * * * *   cd /path/to/repo && codex exec "Close completed loop engineering issues"
 ```
 
 ### Concurrency model
