@@ -2,7 +2,62 @@ from pathlib import Path
 
 import yaml
 
-from scripts.loop_product_os import init_product_os, product_status, validate_product_os
+from scripts.loop_product_os import (
+    init_product_os,
+    product_status,
+    update_work_item,
+    validate_product_os,
+)
+
+
+def _write_work_item(tmp_path: Path, work_item_id: str, **fields) -> Path:
+    init_product_os(tmp_path)
+    path = tmp_path / ".product" / "work-items" / f"{work_item_id}.yaml"
+    base = {"id": work_item_id, "feature_id": "feature-x", "title": "Task", "status": "in-progress"}
+    base.update(fields)
+    path.write_text(yaml.safe_dump(base, sort_keys=False), encoding="utf-8")
+    return path
+
+
+def test_update_work_item_sets_status_and_appends_links(tmp_path: Path):
+    path = _write_work_item(tmp_path, "wi-feature-x-001")
+
+    result = update_work_item(tmp_path, "wi-feature-x-001", status="done", issue=12, pr=34)
+
+    assert result["ok"] is True
+    written = yaml.safe_load(path.read_text(encoding="utf-8"))
+    assert written["status"] == "done"
+    assert written["links"]["issues"] == [12]
+    assert written["links"]["prs"] == [34]
+
+
+def test_update_work_item_does_not_duplicate_links(tmp_path: Path):
+    _write_work_item(tmp_path, "wi-feature-x-002", links={"issues": [7], "prs": []})
+
+    result = update_work_item(tmp_path, "wi-feature-x-002", issue=7, pr=9)
+
+    assert result["work_item"].endswith("wi-feature-x-002.yaml")
+    written = yaml.safe_load((tmp_path / ".product" / "work-items" / "wi-feature-x-002.yaml").read_text(encoding="utf-8"))
+    assert written["links"]["issues"] == [7]
+    assert written["links"]["prs"] == [9]
+
+
+def test_update_work_item_rejects_unknown_status(tmp_path: Path):
+    _write_work_item(tmp_path, "wi-feature-x-003")
+
+    result = update_work_item(tmp_path, "wi-feature-x-003", status="shipped")
+
+    assert result["ok"] is False
+    assert "unknown work item status" in result["error"]
+
+
+def test_update_work_item_reports_missing_file(tmp_path: Path):
+    init_product_os(tmp_path)
+
+    result = update_work_item(tmp_path, "wi-does-not-exist", status="done")
+
+    assert result["ok"] is False
+    assert "work item not found" in result["error"]
 
 
 def test_init_product_os_creates_required_structure(tmp_path: Path):

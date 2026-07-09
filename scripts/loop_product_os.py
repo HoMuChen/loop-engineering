@@ -304,6 +304,49 @@ def validate_product_os(root: Path = Path(".")) -> dict[str, Any]:
     }
 
 
+def update_work_item(
+    root: Path = Path("."),
+    work_item_id: str = "",
+    status: str | None = None,
+    issue: int | None = None,
+    pr: int | None = None,
+) -> dict[str, Any]:
+    """Write execution facts back into a work item so `.product/` stops drifting.
+
+    Sets the work item status and appends issue / PR links without duplicates.
+    Used by loop-close after an issue's PR merges.
+    """
+    root = root.resolve()
+    path = _product_root(root) / "work-items" / f"{work_item_id}.yaml"
+    if not path.exists():
+        return {"ok": False, "error": f"work item not found: {path}"}
+    if status is not None and status not in WORK_ITEM_STATUSES:
+        return {"ok": False, "error": f"unknown work item status: {status}"}
+
+    item = _load_yaml(path)
+    if not isinstance(item, dict):
+        return {"ok": False, "error": f"work item is not a mapping: {path}"}
+
+    if status is not None:
+        item["status"] = status
+
+    links = item.get("links")
+    if not isinstance(links, dict):
+        links = {}
+    issues = list(links.get("issues") or [])
+    prs = list(links.get("prs") or [])
+    if issue is not None and issue not in issues:
+        issues.append(issue)
+    if pr is not None and pr not in prs:
+        prs.append(pr)
+    links["issues"] = issues
+    links["prs"] = prs
+    item["links"] = links
+
+    path.write_text(yaml.safe_dump(item, sort_keys=False, allow_unicode=True), encoding="utf-8")
+    return {"ok": True, "work_item": str(path.relative_to(root)), "status": item.get("status"), "links": links}
+
+
 def product_status(root: Path = Path(".")) -> dict[str, Any]:
     root = root.resolve()
     product_root = _product_root(root)
@@ -368,6 +411,13 @@ def main() -> int:
     status_parser.add_argument("--root", default=".")
     status_parser.add_argument("--json", action="store_true")
 
+    work_item_parser = subparsers.add_parser("work-item")
+    work_item_parser.add_argument("--root", default=".")
+    work_item_parser.add_argument("--id", required=True)
+    work_item_parser.add_argument("--status")
+    work_item_parser.add_argument("--issue", type=int)
+    work_item_parser.add_argument("--pr", type=int)
+
     args = parser.parse_args()
 
     if args.command == "init":
@@ -394,6 +444,17 @@ def main() -> int:
         else:
             print(json.dumps(result, indent=2, sort_keys=True))
         return 0 if result["validation"]["ok"] else 1
+
+    if args.command == "work-item":
+        result = update_work_item(
+            Path(args.root),
+            work_item_id=args.id,
+            status=args.status,
+            issue=args.issue,
+            pr=args.pr,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return 0 if result["ok"] else 1
 
     return 2
 

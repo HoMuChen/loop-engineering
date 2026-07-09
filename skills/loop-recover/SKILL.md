@@ -14,7 +14,7 @@ Recover stale or inconsistent loop runs, and return resolved blocked issues to t
 3. Compare the run comment with branch, PR, CI, and review state.
 4. Add `run:stale` when `Updated` is older than policy `stale_after_minutes`.
 5. Resume when the next action is clear.
-6. Reassign when the original run is abandoned but state is safe.
+6. Reassign when the original run is abandoned but state is safe. Preserve the existing run comment, including its `Repairs` counts, so the resuming run continues the repair budget instead of restarting it.
 7. Block when state is ambiguous or human decision is needed.
 8. Remove orphaned worktrees under `worktree_root` whose owning run is stale, abandoned, or resolved (`git worktree remove`, then `git worktree prune`). A lingering worktree wrongly counts against `max_concurrent_runs`, so freeing it returns the slot.
 

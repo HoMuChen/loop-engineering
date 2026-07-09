@@ -273,7 +273,10 @@ loop_engineering:
   pr_repair_limit: 2
   max_concurrent_runs: 1
   worktree_root: .loop/worktrees
+  intake_issue_limit: 10
 ```
+
+See [references/repo-policy.md](references/repo-policy.md) for what each key does and its default.
 
 ## Running on a Schedule
 
