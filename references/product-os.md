@@ -86,7 +86,7 @@ GitHub Milestones map to Product OS features. One milestone represents one featu
 - `loop-close` checks the milestone after the last issue closes. A milestone with all issues closed is a signal that its feature is a candidate to move to `released` and to produce release notes.
 - Advancing a roadmap feature is a human-owned decision (see Authority Boundary). Agents recommend based on milestone completion; they do not auto-advance roadmap status.
 
-Use `scripts/loop_gh_milestone.py`:
+Use `${CLAUDE_PLUGIN_ROOT}/scripts/loop_gh_milestone.py` (the plugin's install directory; see the skill files' path note):
 
 - `ensure --title {feature-id} [--description ...]`: find or create a milestone.
 - `get --title {feature-id}`: read one milestone's completion progress.

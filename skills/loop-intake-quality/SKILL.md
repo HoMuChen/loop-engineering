@@ -5,15 +5,17 @@ description: Use to scan a repository for quality and safety findings (security,
 
 # Loop Intake Quality
 
+> Paths below use `${CLAUDE_PLUGIN_ROOT}` — this plugin's install directory. Claude Code substitutes it automatically; tools that do not (e.g. Codex) should resolve it as the plugin root, not the target repo.
+
 Generate work for the loop from the codebase itself. This skill is the source of quality-driven issues: it scans, then files well-scoped issues that the rest of the loop can pick up. It is reactive to evidence, not to product strategy — for feature ideas use a product intake instead.
 
 ## Required Setup
 
 - Run `gh auth status`.
 - Confirm the current directory is a git repository with a GitHub remote.
-- Ensure the loop label set exists with `python ../../scripts/loop_labels.py ensure`. This is an idempotent upsert so a fresh repository does not fail the first `gh issue create --label` call.
+- Ensure the loop label set exists with `python ${CLAUDE_PLUGIN_ROOT}/scripts/loop_labels.py ensure`. This is an idempotent upsert so a fresh repository does not fail the first `gh issue create --label` call.
 - Read repository instructions such as `AGENTS.md`, `CLAUDE.md`, or equivalent.
-- Read `.loop-engineering.yml` through `scripts/loop_repo_policy.py`. Note `intake_issue_limit`.
+- Read `.loop-engineering.yml` through `${CLAUDE_PLUGIN_ROOT}/scripts/loop_repo_policy.py`. Note `intake_issue_limit`.
 
 ## Scan Categories
 

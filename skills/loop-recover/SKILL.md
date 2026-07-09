@@ -5,6 +5,8 @@ description: Use to find stale loop engineering issues or PRs, compare issue lab
 
 # Loop Recover
 
+> Paths below use `${CLAUDE_PLUGIN_ROOT}` — this plugin's install directory. Claude Code substitutes it automatically; tools that do not (e.g. Codex) should resolve it as the plugin root, not the target repo.
+
 Recover stale or inconsistent loop runs, and return resolved blocked issues to the queue.
 
 ## Stale Run Recovery
@@ -23,7 +25,7 @@ Recover stale or inconsistent loop runs, and return resolved blocked issues to t
 `loop:blocked` is otherwise a dead end: no other skill revisits it, so a human who answers the blocking question but forgets the label surgery leaves the issue stuck forever. Sweep it here.
 
 9. List open issues with `loop:blocked`.
-10. For each, read the latest blocking comment (from `templates/comments/blocked.md` or `triage-question.md`) and identify what human input it requested.
+10. For each, read the latest blocking comment (from `${CLAUDE_PLUGIN_ROOT}/templates/comments/blocked.md` or `triage-question.md`) and identify what human input it requested.
 11. Check for a newer comment from a human (not an `agent:*` run comment) posted after the block that supplies the requested input or decision.
-12. When the blocker is an information or question gap that a human has now answered, and no protected label remains on the issue, return it to the queue: remove `loop:blocked` and `loop:needs-human`, then add `loop:ready` (use `scripts/loop_labels.py set-status`). Leave a short comment noting it was unblocked from the human reply.
+12. When the blocker is an information or question gap that a human has now answered, and no protected label remains on the issue, return it to the queue: remove `loop:blocked` and `loop:needs-human`, then add `loop:ready` (use `${CLAUDE_PLUGIN_ROOT}/scripts/loop_labels.py set-status`). Leave a short comment noting it was unblocked from the human reply.
 13. Do not auto-unblock when a protected label (for example `security`, `data-loss`, `migration`, `needs-human`) is still present, when the decision requires approval the human has not given, or when the human reply is ambiguous. Report these as still blocked so a human can act.

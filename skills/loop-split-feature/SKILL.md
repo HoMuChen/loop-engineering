@@ -5,6 +5,8 @@ description: Use to split a Product OS feature spec with spec-approved or ready-
 
 # Loop Split Feature
 
+> Paths below use `${CLAUDE_PLUGIN_ROOT}` — this plugin's install directory. Claude Code substitutes it automatically; tools that do not (e.g. Codex) should resolve it as the plugin root, not the target repo.
+
 Split an approved feature spec into small, reviewable work items. Product OS work items describe execution units; GitHub Issues remain the source of truth for actual engineering runs.
 
 ## Required Setup
@@ -12,8 +14,8 @@ Split an approved feature spec into small, reviewable work items. Product OS wor
 - Confirm `.product/` exists. If missing, use `loop-product-init` first.
 - Run `gh auth status` only if creating or syncing GitHub Issues.
 - Read repository instructions such as `AGENTS.md`, `CLAUDE.md`, or equivalent when present.
-- Read `../../references/product-os.md`.
-- Run `python ../../scripts/loop_product_os.py validate --root .`.
+- Read `${CLAUDE_PLUGIN_ROOT}/references/product-os.md`.
+- Run `python ${CLAUDE_PLUGIN_ROOT}/scripts/loop_product_os.py validate --root .`.
 - Read `.product/product-brief.md`, `.product/roadmap.yaml`, and the target feature spec.
 
 ## Selection Rules
@@ -58,13 +60,13 @@ Use `status: needs-review` by default. Use `status: ready-for-build` only when t
 3. Keep high-risk work smaller and mark approval requirements clearly.
 4. Avoid duplicate work items by comparing existing `.product/work-items/*.yaml`.
 5. Create or update work item YAML files.
-6. When creating GitHub Issues, first ensure the feature's milestone exists so every issue can be grouped under it: `python ../../scripts/loop_gh_milestone.py ensure --title {feature-id} --description "{feature-title}"`. The milestone title is the feature id (see `../../references/product-os.md`).
+6. When creating GitHub Issues, first ensure the feature's milestone exists so every issue can be grouped under it: `python ${CLAUDE_PLUGIN_ROOT}/scripts/loop_gh_milestone.py ensure --title {feature-id} --description "{feature-title}"`. The milestone title is the feature id (see `${CLAUDE_PLUGIN_ROOT}/references/product-os.md`).
 7. Create GitHub Issues only when explicitly requested or when syncing existing `ready-for-build` work items. Attach each issue to the feature milestone with `gh issue create --milestone {feature-id}`. Each issue must include the feature id, work item id, definition of done, non-goals, risk, and validation commands.
 8. Label generated execution issues with `kind:feature` and `loop:ready` only when the work item is ready, scoped, and verification is clear.
 9. Do not add protected labels such as `security`, `data-loss`, `migration`, or `needs-human` to an issue that also has `loop:ready`. `loop-engineer-issue` treats protected labels as a stop condition, so `loop:ready` plus a protected label is an invalid execution state.
 10. If a work item has a security-, permission-, credential-, migration-, billing-, or data-loss-sensitive concern but is still approved for loop execution, record the concern in the issue body and use non-blocking labels such as `area:security`, `area:permissions`, or `risk:medium` when the repository uses them. Do not use protected labels for non-blocking risk metadata.
 11. If a work item truly requires human handling before implementation, do not mark it `loop:ready`. Use `loop:blocked` plus `loop:needs-human` and add the relevant protected label.
-12. Run `python ../../scripts/loop_product_os.py validate --root .`.
+12. Run `python ${CLAUDE_PLUGIN_ROOT}/scripts/loop_product_os.py validate --root .`.
 13. Report created work items, skipped duplicates, created issues, the feature milestone, and any items needing human review.
 
 ## Boundaries

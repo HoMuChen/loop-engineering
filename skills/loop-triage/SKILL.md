@@ -5,12 +5,14 @@ description: Use to classify open GitHub Issues, add loop labels, mark ready iss
 
 # Loop Triage
 
+> Paths below use `${CLAUDE_PLUGIN_ROOT}` — this plugin's install directory. Claude Code substitutes it automatically; tools that do not (e.g. Codex) should resolve it as the plugin root, not the target repo.
+
 Scan open GitHub Issues and prepare them for agent work.
 
 ## Required Setup
 
 - Run `gh auth status`.
-- Ensure the loop label set exists with `python ../../scripts/loop_labels.py ensure`. This is an idempotent upsert; a repository that has never run the loop otherwise fails the first `--add-label` call.
+- Ensure the loop label set exists with `python ${CLAUDE_PLUGIN_ROOT}/scripts/loop_labels.py ensure`. This is an idempotent upsert; a repository that has never run the loop otherwise fails the first `--add-label` call.
 
 ## Workflow
 
@@ -19,6 +21,6 @@ Scan open GitHub Issues and prepare them for agent work.
 3. Add priority and area labels when the issue text makes the choice clear.
 4. Add `loop:ready` only when the issue has enough information for implementation and verification.
 5. Add `loop:needs-human` when information is missing.
-6. Ask one concrete question using `templates/comments/triage-question.md`.
+6. Ask one concrete question using `${CLAUDE_PLUGIN_ROOT}/templates/comments/triage-question.md`.
 
 Do not edit code, create branches, open PRs, merge, or close issues.

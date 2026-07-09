@@ -70,6 +70,15 @@ codex plugin install loop-engineering
 
 Codex loads the manifest from `.codex-plugin/plugin.json` and auto-discovers the same skills in `skills/`. No code changes are needed to share skills between the two tools — both read the `skills/` directory.
 
+## Helper script paths
+
+The skills invoke the bundled helper scripts, references, and templates through `${CLAUDE_PLUGIN_ROOT}` — the absolute path to this plugin's install directory. This matters because the loop operates on a **target** repository: the working directory is that repo, not the plugin, so a bare `scripts/...` path would not resolve.
+
+- **Claude Code** substitutes `${CLAUDE_PLUGIN_ROOT}` inline in skill content before the agent runs, so the commands resolve to the installed plugin directory automatically. This is the [documented plugin path variable](https://code.claude.com/docs/en/plugins-reference).
+- **Codex** and other tools that do not substitute the variable should treat it as this plugin's root directory (where the `skills/`, `scripts/`, and `templates/` folders live) and resolve the same relative path there. Codex has no equivalent placeholder, so the skills state this convention explicitly.
+
+When developing inside this repository (not running it as an installed plugin against another repo), the plugin root is the repo root, so the `python scripts/...` commands in [Local Verification](#local-verification) run as written.
+
 ## Usage
 
 The skills are activated by natural language. Once installed in either tool, describe the task and the matching skill loads automatically. You can run prompts interactively, or non-interactively from a scheduler:
@@ -154,10 +163,10 @@ It should separate repo-backed facts from assumptions, ask you to confirm target
 
 Set roadmap items to statuses such as `needs-spec`, `spec-approved`, or `ready-for-build`. Product OS skills can draft and split work, but humans should approve product priority, MVP scope, and high-risk features.
 
-The loop relies on a set of labels (`loop:*`, `kind:*`, `agent:*`, `run:stale`, and the protected labels). `loop-triage` and `loop-intake-quality` ensure them automatically on each run, so a brand-new repository does not fail its first labeling call. To pre-create them yourself:
+The loop relies on a set of labels (`loop:*`, `kind:*`, `agent:*`, `run:stale`, and the protected labels). `loop-triage` and `loop-intake-quality` ensure them automatically on each run, so a brand-new repository does not fail its first labeling call. To pre-create them yourself, run the helper from the plugin's own directory (see [Helper script paths](#helper-script-paths)):
 
 ```bash
-python scripts/loop_labels.py ensure
+python "$CLAUDE_PLUGIN_ROOT/scripts/loop_labels.py" ensure
 ```
 
 To change roadmap state through conversation, use an explicit instruction:

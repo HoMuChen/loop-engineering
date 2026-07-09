@@ -5,14 +5,16 @@ description: Use to apply explicit user-approved changes to .product/roadmap.yam
 
 # Loop Roadmap Update
 
+> Paths below use `${CLAUDE_PLUGIN_ROOT}` — this plugin's install directory. Claude Code substitutes it automatically; tools that do not (e.g. Codex) should resolve it as the plugin root, not the target repo.
+
 Update Product OS roadmap state when the user gives explicit product direction. Treat `.product/roadmap.yaml` as product state, not as an execution queue. GitHub Issues remain the source of truth for build execution.
 
 ## Required Setup
 
 - Confirm `.product/` exists. If missing, use `loop-product-init` first.
 - Read repository instructions such as `AGENTS.md`, `CLAUDE.md`, or equivalent when present.
-- Read `../../references/product-os.md`.
-- Run `python ../../scripts/loop_product_os.py validate --root .`.
+- Read `${CLAUDE_PLUGIN_ROOT}/references/product-os.md`.
+- Run `python ${CLAUDE_PLUGIN_ROOT}/scripts/loop_product_os.py validate --root .`.
 - Read `.product/product-brief.md` and `.product/roadmap.yaml`.
 - Read relevant `.product/feature-specs/*.yaml`, `.product/work-items/*.yaml`, decisions, feedback, GitHub Issues, and PRs when the update depends on current facts.
 
@@ -50,7 +52,7 @@ If the user's latest message already explicitly requests one of those changes, t
 
 1. Parse the requested roadmap changes.
 2. Validate that target sections are one of `now`, `next`, `later`, or `icebox`.
-3. Validate that feature statuses are defined in `../../references/product-os.md`.
+3. Validate that feature statuses are defined in `${CLAUDE_PLUGIN_ROOT}/references/product-os.md`.
 4. Preserve existing roadmap item fields such as `id`, `title`, `priority`, `status`, `progress`, `prs`, and `next_recommended_work_item`.
 5. Apply only the requested changes to `.product/roadmap.yaml`.
 6. When adding a new roadmap item, include at least:
@@ -63,7 +65,7 @@ status: needs-spec
 ```
 
 7. Add or update `.product/decisions/{yyyy-mm-dd}-roadmap-update.md` when the change affects priority, scope, Now/Next/Later placement, or release status.
-8. Run `python ../../scripts/loop_product_os.py validate --root .`.
+8. Run `python ${CLAUDE_PLUGIN_ROOT}/scripts/loop_product_os.py validate --root .`.
 9. Summarize exact changes, any decision file written, validation warnings, and follow-up work such as spec drafting or work item splitting.
 
 ## Boundaries

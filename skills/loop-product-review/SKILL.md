@@ -5,6 +5,8 @@ description: Use to review Product OS state by reading .product, GitHub Issues, 
 
 # Loop Product Review
 
+> Paths below use `${CLAUDE_PLUGIN_ROOT}` — this plugin's install directory. Claude Code substitutes it automatically; tools that do not (e.g. Codex) should resolve it as the plugin root, not the target repo.
+
 Review product progress from Product OS and the GitHub Issue engineering loop. Produce a factual product status report and recommendations.
 
 ## Required Setup
@@ -12,9 +14,9 @@ Review product progress from Product OS and the GitHub Issue engineering loop. P
 - Run `gh auth status` when GitHub state is needed.
 - Confirm the current directory is a git repository with a GitHub remote.
 - Read repository instructions such as `AGENTS.md`, `CLAUDE.md`, or equivalent when present.
-- Read `../../references/product-os.md`.
-- Run `python ../../scripts/loop_product_os.py validate --root .`.
-- Run `python ../../scripts/loop_product_os.py status --root . --json`.
+- Read `${CLAUDE_PLUGIN_ROOT}/references/product-os.md`.
+- Run `python ${CLAUDE_PLUGIN_ROOT}/scripts/loop_product_os.py validate --root .`.
+- Run `python ${CLAUDE_PLUGIN_ROOT}/scripts/loop_product_os.py status --root . --json`.
 
 ## Workflow
 
@@ -23,7 +25,7 @@ Review product progress from Product OS and the GitHub Issue engineering loop. P
 3. Read relevant `.product/feature-specs/*.yaml` and `.product/work-items/*.yaml`.
 4. Inspect open GitHub Issues with `gh issue list --state open --json number,title,labels,url`.
 5. Inspect pull requests with `gh pr list --state all --limit 50 --json number,title,state,labels,url,mergeStateStatus`.
-6. Inspect feature milestones with `python ../../scripts/loop_gh_milestone.py list` to read per-feature completion progress (a milestone maps to one feature; see `../../references/product-os.md`).
+6. Inspect feature milestones with `python ${CLAUDE_PLUGIN_ROOT}/scripts/loop_gh_milestone.py list` to read per-feature completion progress (a milestone maps to one feature; see `${CLAUDE_PLUGIN_ROOT}/references/product-os.md`).
 7. Inspect structured loop run comments when needed.
 8. Compare roadmap and work item status with issue, PR, and milestone facts.
 9. Report completed work, in-progress work, blockers, stale or inconsistent state, risk, and next recommended action.

@@ -5,6 +5,8 @@ description: Use to initialize or repair the .product Product OS directory for a
 
 # Loop Product Init
 
+> Paths below use `${CLAUDE_PLUGIN_ROOT}` — this plugin's install directory. Claude Code substitutes it automatically; tools that do not (e.g. Codex) should resolve it as the plugin root, not the target repo.
+
 Initialize the Product OS layer for a product repository. Treat `.product/` as the product source of truth and GitHub Issues as the execution source of truth.
 
 Initialization has two phases:
@@ -17,11 +19,11 @@ Initialization has two phases:
 - Confirm the current directory is the target product repository.
 - Confirm the repository is under git.
 - Read repository instructions such as `AGENTS.md`, `CLAUDE.md`, or equivalent when present.
-- Read `../../references/product-os.md`.
+- Read `${CLAUDE_PLUGIN_ROOT}/references/product-os.md`.
 
 ## Workflow
 
-1. Run `python ../../scripts/loop_product_os.py init --root .`.
+1. Run `python ${CLAUDE_PLUGIN_ROOT}/scripts/loop_product_os.py init --root .`.
 2. If the product owner is known, pass `--owner <name>`.
 3. Preserve existing `.product/` files. The init command is idempotent and only creates missing directories or files.
 4. Inspect the repository to infer product context from evidence:
@@ -37,7 +39,7 @@ Initialization has two phases:
    - Proposed `.product/roadmap.yaml` with Now / Next / Later / Icebox.
 6. Ask the user to confirm or correct the proposal before replacing TODO content.
 7. After approval, update `.product/product-brief.md`, `.product/roadmap.yaml`, and optionally `.product/decisions/{date}-initial-product-os.md`.
-8. Run `python ../../scripts/loop_product_os.py validate --root .`.
+8. Run `python ${CLAUDE_PLUGIN_ROOT}/scripts/loop_product_os.py validate --root .`.
 9. Report created files, preserved files, written product content, validation warnings, and next required human inputs.
 
 ## Discovery Rules

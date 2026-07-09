@@ -5,14 +5,16 @@ description: "Use when asked to take a GitHub Issue through the full engineering
 
 # Loop Engineer Issue
 
-Use GitHub Issues as the source of truth. Use `gh` through the helper scripts in `../../scripts/`.
+> Paths below use `${CLAUDE_PLUGIN_ROOT}` — this plugin's install directory. Claude Code substitutes it automatically; tools that do not (e.g. Codex) should resolve it as the plugin root, not the target repo.
+
+Use GitHub Issues as the source of truth. Use `gh` through the helper scripts in `${CLAUDE_PLUGIN_ROOT}/scripts/`.
 
 ## Required Setup
 
 - Run `gh auth status`.
 - Confirm the current directory is a git repository with a GitHub remote.
 - Read repository instructions such as `AGENTS.md`, `CLAUDE.md`, or equivalent.
-- Read `.loop-engineering.yml` through `scripts/loop_repo_policy.py`. Note `max_concurrent_runs` and `worktree_root`.
+- Read `.loop-engineering.yml` through `${CLAUDE_PLUGIN_ROOT}/scripts/loop_repo_policy.py`. Note `max_concurrent_runs` and `worktree_root`.
 
 ## Concurrency
 
@@ -35,7 +37,7 @@ Do not exceed `pr_repair_limit` when resuming a repair. If the recorded repair c
 
 ## Workflow
 
-1. Read the issue with `scripts/loop_gh_issue_state.py get --issue <number>`.
+1. Read the issue with `${CLAUDE_PLUGIN_ROOT}/scripts/loop_gh_issue_state.py get --issue <number>`.
 2. Refuse issues already claimed by a live run (`loop:claimed` / `loop:in-progress` whose run comment is fresh) unless the user explicitly requests resume or recovery. A `loop:repairing` issue selected per the Selection rules is a resume, not a refusal.
 3. Stop and mark blocked if requirements are unclear or protected labels are present. A `loop:ready` issue with a protected label is inconsistent; do not treat the ready label as an override.
 4. Count active runs (`gh issue list` for the active labels above). If the count is already at or above `max_concurrent_runs`, stop without claiming — another run holds the slot.
@@ -45,11 +47,11 @@ Do not exceed `pr_repair_limit` when resuming a repair. If the recorded repair c
    - **Slot race:** if the active-run count now exceeds `max_concurrent_runs` and another run claimed a different issue earlier (lower issue number, or earlier `Started`), yield the same way.
    - Otherwise proceed.
 7. For a fresh issue, create a branch using the configured branch prefix, then add it as a worktree under `worktree_root`, for example `git worktree add <worktree_root>/<issue> -b <branch>`. When resuming a `loop:repairing` issue, reuse the existing branch and worktree recorded in the run comment (recreate the worktree from the branch if it was pruned) instead of starting a new branch. Do all implementation and verification inside this worktree. Install dependencies there if verification needs them.
-8. Create or update the structured run comment from `templates/comments/run.md`, including the `Worktree` path and the `Repairs` line. When resuming a `loop:repairing` or stale issue, read the existing run comment first and carry its `Repairs` counts forward — never reset them.
+8. Create or update the structured run comment from `${CLAUDE_PLUGIN_ROOT}/templates/comments/run.md`, including the `Worktree` path and the `Repairs` line. When resuming a `loop:repairing` or stale issue, read the existing run comment first and carry its `Repairs` counts forward — never reset them.
 9. Plan the work in the run comment.
 10. Implement the smallest scoped change that satisfies the issue.
 11. Run verification. If `required_verification` is non-empty, run exactly those commands. If it is empty, infer the repository's standard checks (for example test / typecheck / lint / build from `package.json` scripts, `pyproject.toml`, a `Makefile`, or CI config) and run what you find. If no verification exists and none can be inferred, do not imply the change is verified: state "no verification configured or discoverable" in both the run comment `Verification` section and the PR `Risk` section.
-12. Open a PR with a body based on `templates/pull-request.md`.
+12. Open a PR with a body based on `${CLAUDE_PLUGIN_ROOT}/templates/pull-request.md`.
 13. Inspect CI and reviews.
 14. Repair failures within policy limits. Read the current counts from the run comment `Repairs` line, increment `local` for each local-verification repair and `pr` for each CI or review repair, and write the updated line back on every attempt. Stop when a count would exceed `local_repair_limit` or `pr_repair_limit`: mark `loop:blocked` plus `loop:needs-human` instead of repairing again. Because the counts live in the run comment, they survive a stale-and-reassign hand-off, so a resumed run cannot silently restart the repair budget.
 15. Merge only when repository policy and branch protection allow it.
@@ -58,4 +60,4 @@ Do not exceed `pr_repair_limit` when resuming a repair. If the recorded repair c
 
 ## Stop Conditions
 
-Stop with `loop:blocked` and `loop:needs-human` for any condition listed in `../../references/full-loop-contract.md`.
+Stop with `loop:blocked` and `loop:needs-human` for any condition listed in `${CLAUDE_PLUGIN_ROOT}/references/full-loop-contract.md`.

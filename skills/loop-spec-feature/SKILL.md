@@ -5,14 +5,16 @@ description: Use to turn a Product OS roadmap feature with needs-spec or needs-d
 
 # Loop Spec Feature
 
+> Paths below use `${CLAUDE_PLUGIN_ROOT}` — this plugin's install directory. Claude Code substitutes it automatically; tools that do not (e.g. Codex) should resolve it as the plugin root, not the target repo.
+
 Draft a feature spec from Product OS roadmap context. The result should be reviewable by a human and should not be treated as approved by default.
 
 ## Required Setup
 
 - Confirm `.product/` exists. If missing, use `loop-product-init` first.
 - Read repository instructions such as `AGENTS.md`, `CLAUDE.md`, or equivalent when present.
-- Read `../../references/product-os.md`.
-- Run `python ../../scripts/loop_product_os.py validate --root .`.
+- Read `${CLAUDE_PLUGIN_ROOT}/references/product-os.md`.
+- Run `python ${CLAUDE_PLUGIN_ROOT}/scripts/loop_product_os.py validate --root .`.
 - Read `.product/product-brief.md` and `.product/roadmap.yaml`.
 
 ## Selection Rules
@@ -64,7 +66,7 @@ open_questions:
 2. Gather existing context from product brief, roadmap, feedback, decisions, and related issues when available.
 3. Draft the spec with explicit scope, non-goals, acceptance criteria, risk, approval requirements, and open questions.
 4. Keep status as `spec-draft` unless the user explicitly approved the spec in the current request.
-5. Run `python ../../scripts/loop_product_os.py validate --root .`.
+5. Run `python ${CLAUDE_PLUGIN_ROOT}/scripts/loop_product_os.py validate --root .`.
 6. Summarize what was drafted and what needs human review.
 
 ## Boundaries
