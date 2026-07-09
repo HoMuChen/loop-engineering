@@ -20,15 +20,24 @@ Multiple runs may execute in parallel, each isolated in its own git worktree. Gi
 
 `max_concurrent_runs` is a soft cap, enforced optimistically. It can briefly overshoot when several runs start in the same instant; per-issue double-claiming is still prevented because each run refuses an already-claimed issue.
 
+## Selection
+
+When the user names a specific issue, use it. When the prompt is open ("take the next issue"), select in this priority order so in-flight work finishes before new work starts:
+
+1. **Resume a repair.** An open `loop:repairing` issue whose latest run comment is not being actively updated by another agent (its `Updated` is older than `stale_after_minutes`, or the newest activity is the review that requested changes). `loop-review-pr` sets `loop:repairing` but does not itself repair, so without this step a review fix waits for the `loop-recover` watchdog and stalls for a full stale window. Repairing an existing PR clears work-in-progress and is cheaper than opening new work.
+2. **Start a fresh issue.** The lowest-numbered open `loop:ready` issue with no protected label.
+
+Do not exceed `pr_repair_limit` when resuming a repair. If the recorded repair count has already reached the limit, stop and mark `loop:blocked` plus `loop:needs-human` instead of repairing again.
+
 ## Workflow
 
 1. Read the issue with `scripts/loop_gh_issue_state.py get --issue <number>`.
-2. Refuse already-claimed issues unless the user explicitly requests resume or recovery.
+2. Refuse issues already claimed by a live run (`loop:claimed` / `loop:in-progress` whose run comment is fresh) unless the user explicitly requests resume or recovery. A `loop:repairing` issue selected per the Selection rules is a resume, not a refusal.
 3. Stop and mark blocked if requirements are unclear or protected labels are present. A `loop:ready` issue with a protected label is inconsistent; do not treat the ready label as an override.
 4. Count active runs (`gh issue list` for the active labels above). If the count is already at or above `max_concurrent_runs`, stop without claiming — another run holds the slot.
 5. Claim optimistically: add `loop:claimed`, `loop:in-progress`, and `agent:<name>` to this issue.
 6. Re-count active runs. If the count now exceeds `max_concurrent_runs` and another run claimed earlier (lower issue number, or earlier `Started` timestamp), yield: remove the labels just added and stop. Otherwise proceed.
-7. Create a branch using the configured branch prefix, then add it as a worktree under `worktree_root`, for example `git worktree add <worktree_root>/<issue> -b <branch>`. Do all implementation and verification inside this worktree. Install dependencies there if verification needs them.
+7. For a fresh issue, create a branch using the configured branch prefix, then add it as a worktree under `worktree_root`, for example `git worktree add <worktree_root>/<issue> -b <branch>`. When resuming a `loop:repairing` issue, reuse the existing branch and worktree recorded in the run comment (recreate the worktree from the branch if it was pruned) instead of starting a new branch. Do all implementation and verification inside this worktree. Install dependencies there if verification needs them.
 8. Create or update the structured run comment, including the `Worktree` path.
 9. Plan the work in the run comment.
 10. Implement the smallest scoped change that satisfies the issue.

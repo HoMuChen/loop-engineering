@@ -124,7 +124,7 @@ Use the plugin as a product-to-PR pipeline:
 | `loop-split-feature` | `Split the approved feature into work items` | After human spec approval | `.product/work-items/*.yaml`, optional GitHub Issues |
 | `loop-intake-quality` | `Scan this repo for quality and security issues` | Nightly or weekly | GitHub Issues |
 | `loop-triage` | `Triage open loop engineering issues` | Every 15-30 minutes, or before build runs | GitHub labels/comments |
-| `loop-engineer-issue` | `Take the next ready loop engineering issue through the loop` | Every 5-15 minutes, capped by `max_concurrent_runs` | Branches, PRs, labels/comments |
+| `loop-engineer-issue` | `Take the next ready or repairing loop engineering issue through the loop` | Every 5-15 minutes, capped by `max_concurrent_runs` | Branches, PRs, labels/comments |
 | `loop-review-pr` | `Review open loop engineering PRs` | Every 10-30 minutes | PR review comments, labels |
 | `loop-recover` | `Recover stale loop engineering runs` | Every 30-60 minutes | Labels/comments, worktree cleanup |
 | `loop-close` | `Close completed loop engineering issues` | Every 30-60 minutes, or after merge | Issue comments/labels/close |
@@ -154,6 +154,12 @@ It should separate repo-backed facts from assumptions, ask you to confirm target
 
 Set roadmap items to statuses such as `needs-spec`, `spec-approved`, or `ready-for-build`. Product OS skills can draft and split work, but humans should approve product priority, MVP scope, and high-risk features.
 
+The loop relies on a set of labels (`loop:*`, `kind:*`, `agent:*`, `run:stale`, and the protected labels). `loop-triage` and `loop-intake-quality` ensure them automatically on each run, so a brand-new repository does not fail its first labeling call. To pre-create them yourself:
+
+```bash
+python scripts/loop_labels.py ensure
+```
+
 To change roadmap state through conversation, use an explicit instruction:
 
 ```bash
@@ -179,7 +185,7 @@ claude -p "Split the approved feature into work items"
 claude -p "Triage open loop engineering issues"
 
 # 5. Build one ready issue
-claude -p "Take the next ready loop engineering issue through the loop"
+claude -p "Take the next ready or repairing loop engineering issue through the loop"
 
 # 6. Review and recover
 claude -p "Review open loop engineering PRs"
@@ -196,7 +202,7 @@ codex exec "Draft the next Product OS feature spec"
 codex exec "Update Product OS roadmap: move line-inbox-v1 to now"
 codex exec "Split the approved feature into work items"
 codex exec "Triage open loop engineering issues"
-codex exec "Take the next ready loop engineering issue through the loop"
+codex exec "Take the next ready or repairing loop engineering issue through the loop"
 codex exec "Review open loop engineering PRs"
 codex exec "Recover stale loop engineering runs"
 codex exec "Review the current Product OS status"
@@ -287,7 +293,7 @@ Claude Code example:
 # Prepare new issues
 */15 * * * *  cd /path/to/repo && claude -p "Triage open loop engineering issues"
 # Work ready issues (parallel-safe via worktrees + max_concurrent_runs)
-*/7  * * * *  cd /path/to/repo && claude -p "Take the next ready loop engineering issue through the loop"
+*/7  * * * *  cd /path/to/repo && claude -p "Take the next ready or repairing loop engineering issue through the loop"
 # Review open loop PRs
 */10 * * * *  cd /path/to/repo && claude -p "Review open loop engineering PRs"
 # Watchdog: recover stale runs and clean orphaned worktrees
@@ -304,7 +310,7 @@ Codex example:
 0 * * * *      cd /path/to/repo && codex exec "Split the approved feature into work items"
 0 3 * * *      cd /path/to/repo && codex exec "Scan this repo for quality and security issues"
 */15 * * * *   cd /path/to/repo && codex exec "Triage open loop engineering issues"
-*/7  * * * *   cd /path/to/repo && codex exec "Take the next ready loop engineering issue through the loop"
+*/7  * * * *   cd /path/to/repo && codex exec "Take the next ready or repairing loop engineering issue through the loop"
 */10 * * * *   cd /path/to/repo && codex exec "Review open loop engineering PRs"
 */30 * * * *   cd /path/to/repo && codex exec "Recover stale loop engineering runs"
 */45 * * * *   cd /path/to/repo && codex exec "Close completed loop engineering issues"
@@ -317,7 +323,7 @@ Codex example:
 For a hard guarantee that only one run executes at a time (e.g. limited resources or shared state), keep `max_concurrent_runs: 1` and wrap the cron line in `flock`:
 
 ```cron
-*/7 * * * * flock -n /tmp/loop-engineer.lock sh -c 'cd /path/to/repo && claude -p "Take the next ready loop engineering issue through the loop"'
+*/7 * * * * flock -n /tmp/loop-engineer.lock sh -c 'cd /path/to/repo && claude -p "Take the next ready or repairing loop engineering issue through the loop"'
 ```
 
 `loop-recover` removes orphaned worktrees left by crashed or stale runs, which also frees their slot against the cap.

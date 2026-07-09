@@ -11,6 +11,7 @@ Generate work for the loop from the codebase itself. This skill is the source of
 
 - Run `gh auth status`.
 - Confirm the current directory is a git repository with a GitHub remote.
+- Ensure the loop label set exists with `python ../../scripts/loop_labels.py ensure`. This is an idempotent upsert so a fresh repository does not fail the first `gh issue create --label` call.
 - Read repository instructions such as `AGENTS.md`, `CLAUDE.md`, or equivalent.
 - Read `.loop-engineering.yml` through `scripts/loop_repo_policy.py`. Note `intake_issue_limit`.
 
