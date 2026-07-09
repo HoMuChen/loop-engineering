@@ -75,3 +75,19 @@ Use `loop-roadmap-update` for explicit user-approved roadmap edits. Vague reques
 ## Build Rule
 
 Only one work item should be built per agent run. A builder should receive product brief context, the feature spec, one work item, non-goals, risk, definition of done, and verification commands.
+
+## Milestones
+
+GitHub Milestones map to Product OS features. One milestone represents one feature, and the milestone title is the feature id. This gives every feature a first-class grouping of its work-item issues plus free completion progress from GitHub.
+
+- Labels remain the workflow state machine. Milestones express feature membership and completion, not state. The two are orthogonal and must not be conflated.
+- `loop-split-feature` ensures a milestone named after the feature id exists, then attaches every generated work-item issue to it.
+- `loop-product-review` reads milestone progress (open vs closed issues) as a fact instead of recomputing feature completion by hand.
+- `loop-close` checks the milestone after the last issue closes. A milestone with all issues closed is a signal that its feature is a candidate to move to `released` and to produce release notes.
+- Advancing a roadmap feature is a human-owned decision (see Authority Boundary). Agents recommend based on milestone completion; they do not auto-advance roadmap status.
+
+Use `scripts/loop_gh_milestone.py`:
+
+- `ensure --title {feature-id} [--description ...]`: find or create a milestone.
+- `get --title {feature-id}`: read one milestone's completion progress.
+- `list [--state all|open|closed]`: list milestones with progress.

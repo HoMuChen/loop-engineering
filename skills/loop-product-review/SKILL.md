@@ -23,9 +23,10 @@ Review product progress from Product OS and the GitHub Issue engineering loop. P
 3. Read relevant `.product/feature-specs/*.yaml` and `.product/work-items/*.yaml`.
 4. Inspect open GitHub Issues with `gh issue list --state open --json number,title,labels,url`.
 5. Inspect pull requests with `gh pr list --state all --limit 50 --json number,title,state,labels,url,mergeStateStatus`.
-6. Inspect structured loop run comments when needed.
-7. Compare roadmap and work item status with issue and PR facts.
-8. Report completed work, in-progress work, blockers, stale or inconsistent state, risk, and next recommended action.
+6. Inspect feature milestones with `python ../../scripts/loop_gh_milestone.py list` to read per-feature completion progress (a milestone maps to one feature; see `../../references/product-os.md`).
+7. Inspect structured loop run comments when needed.
+8. Compare roadmap and work item status with issue, PR, and milestone facts.
+9. Report completed work, in-progress work, blockers, stale or inconsistent state, risk, and next recommended action.
 
 ## Output
 
@@ -33,7 +34,7 @@ Use this structure:
 
 - Product snapshot
 - Completed since last review, when inferable
-- Current roadmap status
+- Current roadmap status, with feature milestone completion progress when available
 - Active work items and PRs
 - Blockers and risks
 - State inconsistencies

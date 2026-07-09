@@ -15,6 +15,7 @@ The Product OS layer adds:
 - `.product/` as the product source of truth.
 - Roadmap, feature specs, work items, decisions, feedback, metrics, and release notes.
 - A guarded path from product intent to ready GitHub Issues.
+- GitHub Milestones (one per feature) that group a feature's work-item issues and track completion progress.
 
 ## Requirements
 
