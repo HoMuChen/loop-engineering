@@ -7,7 +7,7 @@
     {
       "name": "loop-engineering",
       "description": "Product OS and GitHub Issue based full-loop engineering workflows for Codex and Claude Code.",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "source": {
         "source": "local",
         "path": "."

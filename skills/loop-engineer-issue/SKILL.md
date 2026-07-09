@@ -24,7 +24,7 @@ Multiple runs may execute in parallel, each isolated in its own git worktree. Gi
 
 1. Read the issue with `scripts/loop_gh_issue_state.py get --issue <number>`.
 2. Refuse already-claimed issues unless the user explicitly requests resume or recovery.
-3. Stop and mark blocked if requirements are unclear or protected labels are present.
+3. Stop and mark blocked if requirements are unclear or protected labels are present. A `loop:ready` issue with a protected label is inconsistent; do not treat the ready label as an override.
 4. Count active runs (`gh issue list` for the active labels above). If the count is already at or above `max_concurrent_runs`, stop without claiming — another run holds the slot.
 5. Claim optimistically: add `loop:claimed`, `loop:in-progress`, and `agent:<name>` to this issue.
 6. Re-count active runs. If the count now exceeds `max_concurrent_runs` and another run claimed earlier (lower issue number, or earlier `Started` timestamp), yield: remove the labels just added and stop. Otherwise proceed.

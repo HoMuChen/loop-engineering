@@ -59,9 +59,12 @@ Use `status: needs-review` by default. Use `status: ready-for-build` only when t
 4. Avoid duplicate work items by comparing existing `.product/work-items/*.yaml`.
 5. Create or update work item YAML files.
 6. Create GitHub Issues only when explicitly requested or when syncing existing `ready-for-build` work items. Each issue must include the feature id, work item id, definition of done, non-goals, risk, and validation commands.
-7. Label generated execution issues with `kind:feature` and `loop:ready` only when the work item is ready, scoped, and verification is clear. Add protected labels for permission, security, data-loss, migration, billing, or other high-risk work.
-8. Run `python ../../scripts/loop_product_os.py validate --root .`.
-9. Report created work items, skipped duplicates, created issues, and any items needing human review.
+7. Label generated execution issues with `kind:feature` and `loop:ready` only when the work item is ready, scoped, and verification is clear.
+8. Do not add protected labels such as `security`, `data-loss`, `migration`, or `needs-human` to an issue that also has `loop:ready`. `loop-engineer-issue` treats protected labels as a stop condition, so `loop:ready` plus a protected label is an invalid execution state.
+9. If a work item has a security-, permission-, credential-, migration-, billing-, or data-loss-sensitive concern but is still approved for loop execution, record the concern in the issue body and use non-blocking labels such as `area:security`, `area:permissions`, or `risk:medium` when the repository uses them. Do not use protected labels for non-blocking risk metadata.
+10. If a work item truly requires human handling before implementation, do not mark it `loop:ready`. Use `loop:blocked` plus `loop:needs-human` and add the relevant protected label.
+11. Run `python ../../scripts/loop_product_os.py validate --root .`.
+12. Report created work items, skipped duplicates, created issues, and any items needing human review.
 
 ## Boundaries
 
@@ -72,3 +75,5 @@ Do not approve a feature spec.
 Do not bypass GitHub Issues by sending `.product/work-items` directly to `loop-engineer-issue`.
 
 Do not mark high-risk work `loop:ready` without human approval.
+
+Do not combine `loop:ready` with protected labels. If the task should run after approval, keep protected labels off the execution issue and document the risk in the body or non-blocking labels. If the task should not run automatically, omit `loop:ready` and mark it blocked for human handling.
