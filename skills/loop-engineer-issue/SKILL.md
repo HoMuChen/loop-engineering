@@ -14,7 +14,7 @@ Use GitHub Issues as the source of truth. Use `gh` through the helper scripts in
 - Run `gh auth status`.
 - Confirm the current directory is a git repository with a GitHub remote.
 - Read repository instructions such as `AGENTS.md`, `CLAUDE.md`, or equivalent.
-- Read `.loop-engineering.yml` through `${CLAUDE_PLUGIN_ROOT}/scripts/loop_repo_policy.py`. Note `max_concurrent_runs` and `worktree_root`.
+- Read `.loop-engineering.yml` through `${CLAUDE_PLUGIN_ROOT}/scripts/loop_repo_policy.py`. Note `max_concurrent_runs`, `worktree_root`, and `notify_mentions`.
 
 ## Concurrency
 
@@ -61,3 +61,5 @@ Do not exceed `pr_repair_limit` when resuming a repair. If the recorded repair c
 ## Stop Conditions
 
 Stop with `loop:blocked` and `loop:needs-human` for any condition listed in `${CLAUDE_PLUGIN_ROOT}/references/full-loop-contract.md`.
+
+When blocking and `notify_mentions` is non-empty, fill the blocked comment's cc line (`${CLAUDE_PLUGIN_ROOT}/templates/comments/blocked.md`) by @mentioning every listed username and assign the first one with `gh issue edit <number> --add-assignee <username>`, so GitHub's native notifications reach a human; drop the cc line when `notify_mentions` is empty.

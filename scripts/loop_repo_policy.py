@@ -21,6 +21,7 @@ DEFAULT_POLICY: dict[str, Any] = {
     "max_concurrent_runs": 1,
     "worktree_root": ".loop/worktrees",
     "intake_issue_limit": 10,
+    "notify_mentions": [],
 }
 
 
@@ -54,6 +55,10 @@ def load_policy(path: Path = Path(".loop-engineering.yml")) -> dict[str, Any]:
         raise ValueError("intake_issue_limit must be an integer")
     if policy["intake_issue_limit"] < 1:
         raise ValueError("intake_issue_limit must be at least 1")
+    if not isinstance(policy["notify_mentions"], list) or not all(
+        isinstance(login, str) and login for login in policy["notify_mentions"]
+    ):
+        raise ValueError("notify_mentions must be a list of GitHub usernames")
     return policy
 
 

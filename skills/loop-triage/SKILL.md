@@ -13,6 +13,7 @@ Scan open GitHub Issues and prepare them for agent work.
 
 - Run `gh auth status`.
 - Ensure the loop label set exists with `python ${CLAUDE_PLUGIN_ROOT}/scripts/loop_labels.py ensure`. This is an idempotent upsert; a repository that has never run the loop otherwise fails the first `--add-label` call.
+- Read `.loop-engineering.yml` through `${CLAUDE_PLUGIN_ROOT}/scripts/loop_repo_policy.py`. Note `notify_mentions`.
 
 ## Workflow
 
@@ -21,6 +22,6 @@ Scan open GitHub Issues and prepare them for agent work.
 3. Add priority and area labels when the issue text makes the choice clear.
 4. Add `loop:ready` only when the issue has enough information for implementation and verification.
 5. Add `loop:needs-human` when information is missing.
-6. Ask one concrete question using `${CLAUDE_PLUGIN_ROOT}/templates/comments/triage-question.md`.
+6. Ask one concrete question using `${CLAUDE_PLUGIN_ROOT}/templates/comments/triage-question.md`. When `notify_mentions` is non-empty, fill the template's cc line by @mentioning every listed username and assign the first one with `gh issue edit <number> --add-assignee <username>`, so GitHub's native notifications reach a human; drop the cc line when `notify_mentions` is empty.
 
 Do not edit code, create branches, open PRs, merge, or close issues.

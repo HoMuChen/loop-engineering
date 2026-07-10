@@ -21,6 +21,8 @@ loop_engineering:
   max_concurrent_runs: 1
   worktree_root: .loop/worktrees
   intake_issue_limit: 10
+  notify_mentions:
+    - HoMuChen
 ```
 
 `auto_merge` defaults to false. Repositories must opt in to automatic merging.
@@ -30,3 +32,5 @@ loop_engineering:
 `worktree_root` is where parallel runs create their isolated worktrees (default `.loop/worktrees`, which should be gitignored). `loop-recover` cleans orphaned worktrees here.
 
 `intake_issue_limit` caps how many issues `loop-intake-quality` files per scan (default 10), so a scan cannot flood the backlog. Findings beyond the cap are reported, not silently dropped.
+
+`notify_mentions` lists GitHub usernames to notify when a skill needs human input (default empty, meaning no notification). Skills that add `loop:needs-human` @mention these users in the blocking comment and assign the first one to the issue, so GitHub's native email and mobile notifications reach a human without extra infrastructure. Without this key, blocked issues wait silently until someone happens to look.

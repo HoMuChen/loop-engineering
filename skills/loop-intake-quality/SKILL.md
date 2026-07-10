@@ -15,7 +15,7 @@ Generate work for the loop from the codebase itself. This skill is the source of
 - Confirm the current directory is a git repository with a GitHub remote.
 - Ensure the loop label set exists with `python ${CLAUDE_PLUGIN_ROOT}/scripts/loop_labels.py ensure`. This is an idempotent upsert so a fresh repository does not fail the first `gh issue create --label` call.
 - Read repository instructions such as `AGENTS.md`, `CLAUDE.md`, or equivalent.
-- Read `.loop-engineering.yml` through `${CLAUDE_PLUGIN_ROOT}/scripts/loop_repo_policy.py`. Note `intake_issue_limit`.
+- Read `.loop-engineering.yml` through `${CLAUDE_PLUGIN_ROOT}/scripts/loop_repo_policy.py`. Note `intake_issue_limit` and `notify_mentions`.
 
 ## Scan Categories
 
@@ -41,6 +41,7 @@ Use whatever tooling the repository already provides, plus reading the code. Cov
    - Topical/area labels when the choice is clear.
    - `loop:ready` only when the finding is self-justifying with concrete acceptance criteria and verification; otherwise `loop:needs-human`.
    - A protected label (e.g. `security`) for findings with real exploitability or data risk, so `loop-engineer-issue` routes them to a human instead of auto-fixing.
+   - For issues labeled `loop:needs-human` or a protected label, when `notify_mentions` is non-empty, @mention every listed username in the issue body and assign the first one with `gh issue edit <number> --add-assignee <username>`, so GitHub's native notifications reach a human.
 7. If findings were dropped by `intake_issue_limit` or dedup, leave a short summary comment or log noting what was deferred. Do not silently truncate.
 
 ## Boundaries

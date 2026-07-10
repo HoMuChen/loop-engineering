@@ -54,6 +54,47 @@ loop_engineering:
         raise AssertionError("expected ValueError for max_concurrent_runs < 1")
 
 
+def test_load_policy_defaults_notify_mentions_to_empty(tmp_path: Path):
+    policy = load_policy(tmp_path / ".loop-engineering.yml")
+
+    assert policy["notify_mentions"] == []
+
+
+def test_load_policy_merges_notify_mentions(tmp_path: Path):
+    config = tmp_path / ".loop-engineering.yml"
+    config.write_text(
+        """
+loop_engineering:
+  notify_mentions:
+    - HoMuChen
+    - some-teammate
+""",
+        encoding="utf-8",
+    )
+
+    policy = load_policy(config)
+
+    assert policy["notify_mentions"] == ["HoMuChen", "some-teammate"]
+
+
+def test_load_policy_rejects_non_list_notify_mentions(tmp_path: Path):
+    config = tmp_path / ".loop-engineering.yml"
+    config.write_text(
+        """
+loop_engineering:
+  notify_mentions: HoMuChen
+""",
+        encoding="utf-8",
+    )
+
+    try:
+        load_policy(config)
+    except ValueError:
+        pass
+    else:  # pragma: no cover - guard
+        raise AssertionError("expected ValueError for non-list notify_mentions")
+
+
 def test_load_policy_merges_config(tmp_path: Path):
     config = tmp_path / ".loop-engineering.yml"
     config.write_text(

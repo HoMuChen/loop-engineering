@@ -33,7 +33,7 @@ The Product OS layer adds:
 - `loop-intake-quality`: scan the repo and file quality/safety findings as ready issues.
 - `loop-triage`: classify and prepare issues.
 - `loop-engineer-issue`: full issue loop from claim through close.
-- `loop-review-pr`: review loop PRs.
+- `loop-review-pr`: review loop PRs and merge approved ones when policy allows.
 - `loop-recover`: recover stale loop runs.
 - `loop-close`: finalize merged work.
 
@@ -117,7 +117,7 @@ Use the plugin as a product-to-PR pipeline:
 7. `loop-split-feature` splits approved specs into small work items and, when allowed, GitHub Issues.
 8. `loop-triage` scans open issues, applies `kind:*` / priority / area labels, and marks actionable issues `loop:ready`.
 9. `loop-engineer-issue` claims one `loop:ready` issue, plans, implements, verifies, opens a PR, repairs CI or review failures, then merges when policy allows.
-10. `loop-review-pr` reviews the PR bug-first and routes it back to repair or to a human when needed.
+10. `loop-review-pr` reviews the PR bug-first, merges it when the review passes, CI is green, and `auto_merge` allows, or routes it back to repair or to a human when needed.
 11. `loop-recover` reconciles issue labels against branch, PR, CI, and review state for stale runs.
 12. `loop-close` adds a final summary, cleans transient labels, and closes completed issues.
 13. `loop-product-review` summarizes product progress, blockers, risks, and recommended next steps.
@@ -134,7 +134,7 @@ Use the plugin as a product-to-PR pipeline:
 | `loop-intake-quality` | `Scan this repo for quality and security issues` | Nightly or weekly | GitHub Issues |
 | `loop-triage` | `Triage open loop engineering issues` | Every 15-30 minutes, or before build runs | GitHub labels/comments |
 | `loop-engineer-issue` | `Take the next ready or repairing loop engineering issue through the loop` | Every 5-15 minutes, capped by `max_concurrent_runs` | Branches, PRs, labels/comments |
-| `loop-review-pr` | `Review open loop engineering PRs` | Every 10-30 minutes | PR review comments, labels |
+| `loop-review-pr` | `Review open loop engineering PRs` | Every 10-30 minutes | PR review comments, labels, merges when `auto_merge` allows |
 | `loop-recover` | `Recover stale loop engineering runs` | Every 30-60 minutes | Labels/comments, worktree cleanup |
 | `loop-close` | `Close completed loop engineering issues` | Every 30-60 minutes, or after merge | Issue comments/labels/close |
 
@@ -283,6 +283,8 @@ loop_engineering:
   max_concurrent_runs: 1
   worktree_root: .loop/worktrees
   intake_issue_limit: 10
+  notify_mentions:
+    - your-github-username
 ```
 
 See [references/repo-policy.md](references/repo-policy.md) for what each key does and its default.

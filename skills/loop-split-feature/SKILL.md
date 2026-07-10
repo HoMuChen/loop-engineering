@@ -65,7 +65,7 @@ Use `status: needs-review` by default. Use `status: ready-for-build` only when t
 8. Label generated execution issues with `kind:feature` and `loop:ready` only when the work item is ready, scoped, and verification is clear.
 9. Do not add protected labels such as `security`, `data-loss`, `migration`, or `needs-human` to an issue that also has `loop:ready`. `loop-engineer-issue` treats protected labels as a stop condition, so `loop:ready` plus a protected label is an invalid execution state.
 10. If a work item has a security-, permission-, credential-, migration-, billing-, or data-loss-sensitive concern but is still approved for loop execution, record the concern in the issue body and use non-blocking labels such as `area:security`, `area:permissions`, or `risk:medium` when the repository uses them. Do not use protected labels for non-blocking risk metadata.
-11. If a work item truly requires human handling before implementation, do not mark it `loop:ready`. Use `loop:blocked` plus `loop:needs-human` and add the relevant protected label.
+11. If a work item truly requires human handling before implementation, do not mark it `loop:ready`. Use `loop:blocked` plus `loop:needs-human` and add the relevant protected label. When policy `notify_mentions` is non-empty (read `.loop-engineering.yml` through `${CLAUDE_PLUGIN_ROOT}/scripts/loop_repo_policy.py`), @mention every listed username in the issue and assign the first one with `gh issue edit <number> --add-assignee <username>`, so GitHub's native notifications reach a human.
 12. Run `python ${CLAUDE_PLUGIN_ROOT}/scripts/loop_product_os.py validate --root .`.
 13. Report created work items, skipped duplicates, created issues, the feature milestone, and any items needing human review.
 

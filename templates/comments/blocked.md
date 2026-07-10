@@ -7,3 +7,5 @@ Reason:
 
 Human input needed:
 {{ human_input_needed }}
+
+cc {{ mentions }}

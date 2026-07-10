@@ -4,3 +4,5 @@ Question:
 {{ question }}
 
 Once answered, remove `loop:needs-human` and add `loop:ready`.
+
+cc {{ mentions }}
