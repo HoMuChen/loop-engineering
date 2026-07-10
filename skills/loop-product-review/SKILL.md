@@ -27,8 +27,9 @@ Review product progress from Product OS and the GitHub Issue engineering loop. P
 5. Inspect pull requests with `gh pr list --state all --limit 50 --json number,title,state,labels,url,mergeStateStatus`.
 6. Inspect feature milestones with `python ${CLAUDE_PLUGIN_ROOT}/scripts/loop_gh_milestone.py list` to read per-feature completion progress (a milestone maps to one feature; see `${CLAUDE_PLUGIN_ROOT}/references/product-os.md`).
 7. Inspect structured loop run comments when needed.
-8. Compare roadmap and work item status with issue, PR, and milestone facts.
-9. Report completed work, in-progress work, blockers, stale or inconsistent state, risk, and next recommended action.
+8. Derive each work item's execution state from its `links.issues` at read time — `loop:claimed`/`loop:in-progress`/`loop:repairing` mean in-progress, `loop:blocked` means blocked, `loop:pr-open` means in-review (see Work Item Statuses in `${CLAUDE_PLUGIN_ROOT}/references/product-os.md`). Work item YAML stores intent (`draft`, `needs-review`, `ready-for-build`) and the terminal `done` only; a stored `in-progress`/`blocked`/`in-review` is itself a state inconsistency to report.
+9. Compare roadmap and work item status with issue, PR, and milestone facts.
+10. Report completed work, in-progress work, blockers, stale or inconsistent state, risk, and next recommended action.
 
 ## Output
 

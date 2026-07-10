@@ -118,7 +118,7 @@ Use the plugin as a product-to-PR pipeline:
 8. `loop-triage` scans open issues, applies `kind:*` / priority / area labels, and marks actionable issues `loop:ready`.
 9. `loop-engineer-issue` claims one `loop:ready` issue, plans, implements, verifies, opens a PR, repairs CI or review failures, then merges when policy allows.
 10. `loop-review-pr` reviews the PR bug-first, merges it when the review passes, CI is green, and `auto_merge` allows, or routes it back to repair or to a human when needed.
-11. `loop-recover` reconciles issue labels against branch, PR, CI, and review state for stale runs.
+11. `loop-recover` reconciles issue labels against branch, PR, CI, and review state for stale runs, and reconciles `.product` work items against closed issues so a missed close cannot leave permanent drift.
 12. `loop-close` adds a final summary, cleans transient labels, and closes completed issues.
 13. `loop-product-review` summarizes product progress, blockers, risks, and recommended next steps.
 
@@ -135,7 +135,7 @@ Use the plugin as a product-to-PR pipeline:
 | `loop-triage` | `Triage open loop engineering issues` | Every 15-30 minutes, or before build runs | GitHub labels/comments |
 | `loop-engineer-issue` | `Take the next ready or repairing loop engineering issue through the loop` | Every 5-15 minutes, capped by `max_concurrent_runs` | Branches, PRs, labels/comments |
 | `loop-review-pr` | `Review open loop engineering PRs` | Every 10-30 minutes | PR review comments, labels, merges when `auto_merge` allows |
-| `loop-recover` | `Recover stale loop engineering runs` | Every 30-60 minutes | Labels/comments, worktree cleanup |
+| `loop-recover` | `Recover stale loop engineering runs` | Every 30-60 minutes | Labels/comments, worktree cleanup, `.product` work-item reconciliation |
 | `loop-close` | `Close completed loop engineering issues` | Every 30-60 minutes, or after merge | Issue comments/labels/close |
 
 ### First-time setup for a product repo

@@ -40,7 +40,8 @@ Initialization has two phases:
 6. Ask the user to confirm or correct the proposal before replacing TODO content.
 7. After approval, update `.product/product-brief.md`, `.product/roadmap.yaml`, and optionally `.product/decisions/{date}-initial-product-os.md`.
 8. Run `python ${CLAUDE_PLUGIN_ROOT}/scripts/loop_product_os.py validate --root .`.
-9. Report created files, preserved files, written product content, validation warnings, and next required human inputs.
+9. Commit the `.product` changes per Committing .product Changes in `${CLAUDE_PLUGIN_ROOT}/references/product-os.md`.
+10. Report created files, preserved files, written product content, validation warnings, and next required human inputs.
 
 ## Discovery Rules
 

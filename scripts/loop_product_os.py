@@ -54,6 +54,15 @@ WORK_ITEM_STATUSES = {
     "done",
 }
 
+# Execution states live in the linked GitHub issue's labels and PR state.
+# Storing them in YAML creates a second source of truth that drifts, so they
+# are read-time derived values: never persisted, never settable.
+DERIVED_WORK_ITEM_STATUSES = {
+    "in-progress",
+    "blocked",
+    "in-review",
+}
+
 
 def _now_iso() -> str:
     return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
@@ -293,6 +302,11 @@ def validate_product_os(root: Path = Path(".")) -> dict[str, Any]:
         status = item.get("status")
         if status and status not in WORK_ITEM_STATUSES:
             warnings.append(f"{path.relative_to(root)} has unknown status {status}")
+        elif status in DERIVED_WORK_ITEM_STATUSES:
+            warnings.append(
+                f"{path.relative_to(root)} stores derived status {status}; "
+                "execution state lives in the linked GitHub issue, not in YAML"
+            )
         for field in ("id", "feature_id", "title", "status", "definition_of_done", "validation"):
             if field not in item:
                 warnings.append(f"{path.relative_to(root)} is missing {field}")
@@ -322,6 +336,11 @@ def update_work_item(
         return {"ok": False, "error": f"work item not found: {path}"}
     if status is not None and status not in WORK_ITEM_STATUSES:
         return {"ok": False, "error": f"unknown work item status: {status}"}
+    if status in DERIVED_WORK_ITEM_STATUSES:
+        return {
+            "ok": False,
+            "error": f"{status} is a derived status; read it from the linked GitHub issue instead of storing it",
+        }
 
     item = _load_yaml(path)
     if not isinstance(item, dict):

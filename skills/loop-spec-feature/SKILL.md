@@ -67,7 +67,8 @@ open_questions:
 3. Draft the spec with explicit scope, non-goals, acceptance criteria, risk, approval requirements, and open questions.
 4. Keep status as `spec-draft` unless the user explicitly approved the spec in the current request.
 5. Run `python ${CLAUDE_PLUGIN_ROOT}/scripts/loop_product_os.py validate --root .`.
-6. Summarize what was drafted and what needs human review.
+6. Commit the `.product` changes per Committing .product Changes in `${CLAUDE_PLUGIN_ROOT}/references/product-os.md`.
+7. Summarize what was drafted and what needs human review.
 
 ## Boundaries
 

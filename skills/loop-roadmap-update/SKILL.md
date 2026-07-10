@@ -66,7 +66,8 @@ status: needs-spec
 
 7. Add or update `.product/decisions/{yyyy-mm-dd}-roadmap-update.md` when the change affects priority, scope, Now/Next/Later placement, or release status.
 8. Run `python ${CLAUDE_PLUGIN_ROOT}/scripts/loop_product_os.py validate --root .`.
-9. Summarize exact changes, any decision file written, validation warnings, and follow-up work such as spec drafting or work item splitting.
+9. Commit the `.product` changes per Committing .product Changes in `${CLAUDE_PLUGIN_ROOT}/references/product-os.md`.
+10. Summarize exact changes, any decision file written, validation warnings, and follow-up work such as spec drafting or work item splitting.
 
 ## Boundaries
 

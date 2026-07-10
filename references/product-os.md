@@ -64,13 +64,32 @@ Use `loop-roadmap-update` for explicit user-approved roadmap edits. Vague reques
 
 ## Work Item Statuses
 
+`.product/` is the source of truth for intent; GitHub Issues are the source of truth for execution. Work item YAML therefore stores only intent states and the terminal state:
+
 - `draft`: Proposed task.
 - `needs-review`: Waiting for human approval.
 - `ready-for-build`: May become a `loop:ready` GitHub Issue.
+- `done`: Completed and released or merged. Written back by `loop-close` (terminal, so it cannot drift).
+
+The execution states are **derived, never stored**. Read them from the linked issue (`links.issues`) at report time — `loop:claimed`/`loop:in-progress`/`loop:repairing` labels mean in-progress, `loop:blocked` means blocked, `loop:pr-open` means in-review. `loop_product_os.py` warns on stored derived statuses and refuses to write them:
+
 - `in-progress`: Linked issue or PR is active.
 - `blocked`: Requires human input or external state.
 - `in-review`: PR is open or review is pending.
-- `done`: Completed and released or merged.
+
+Deriving instead of mirroring is what keeps the two sides from needing synchronization: a stored copy of live execution state is stale the moment it is written.
+
+## Linking Work Items to Issues
+
+The link must be bidirectional from the moment an issue is created: the issue body carries the work item id (`wi-...`), and the work item's `links.issues` carries the issue number (`loop-split-feature` records it right after `gh issue create` via `loop_product_os.py work-item --id {work-item-id} --issue {number}`). Without the stored link, derived status cannot be computed and `loop-close`'s write-back depends on fragile text matching.
+
+## Committing .product Changes
+
+Skills that write `.product/` (`loop-product-init`, `loop-roadmap-update`, `loop-spec-feature`, `loop-split-feature`, `loop-close`, `loop-recover` reconciliation) must commit what they wrote, or cron-driven runs leave a permanently dirty tree and write-backs can be lost:
+
+1. Update the local default branch first (`git pull --rebase`) — loop merges happen on the remote, so the local default branch is often behind.
+2. Stage only the product paths: `git add .product`.
+3. Commit with a concise message describing the product state change, then push. If the push is rejected, `git pull --rebase` and push again.
 
 ## Build Rule
 

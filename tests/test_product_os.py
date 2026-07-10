@@ -51,6 +51,30 @@ def test_update_work_item_rejects_unknown_status(tmp_path: Path):
     assert "unknown work item status" in result["error"]
 
 
+def test_update_work_item_rejects_derived_status(tmp_path: Path):
+    _write_work_item(tmp_path, "wi-feature-x-004", status="ready-for-build")
+
+    result = update_work_item(tmp_path, "wi-feature-x-004", status="in-progress")
+
+    assert result["ok"] is False
+    assert "derived" in result["error"]
+
+
+def test_validate_product_os_warns_on_stored_derived_status(tmp_path: Path):
+    _write_work_item(
+        tmp_path,
+        "wi-feature-x-005",
+        status="in-progress",
+        definition_of_done=["x"],
+        validation=["x"],
+    )
+
+    result = validate_product_os(tmp_path)
+
+    assert result["ok"] is True
+    assert any("derived" in warning for warning in result["warnings"])
+
+
 def test_update_work_item_reports_missing_file(tmp_path: Path):
     init_product_os(tmp_path)
 

@@ -29,3 +29,12 @@ Recover stale or inconsistent loop runs, and return resolved blocked issues to t
 11. Check for a newer comment from a human (not an `agent:*` run comment) posted after the block that supplies the requested input or decision.
 12. When the blocker is an information or question gap that a human has now answered, and no protected label remains on the issue, return it to the queue: remove `loop:blocked` and `loop:needs-human`, then add `loop:ready` (use `${CLAUDE_PLUGIN_ROOT}/scripts/loop_labels.py set-status`). Leave a short comment noting it was unblocked from the human reply.
 13. Do not auto-unblock when a protected label (for example `security`, `data-loss`, `migration`, `needs-human`) is still present, when the decision requires approval the human has not given, or when the human reply is ambiguous. Report these as still blocked so a human can act.
+
+## Work Item Reconciliation
+
+`loop-close` is the only writer of terminal work item state, so a close that never runs — an issue closed manually, or auto-closed by a PR "fixes #N" keyword — leaves `.product` stale forever. Reconcile it here. Skip this section when `.product/` does not exist.
+
+14. For each `.product/work-items/*.yaml` whose status is not `done` or `draft` and whose `links.issues` is non-empty, read the state of each linked issue.
+15. When every linked issue is closed and its PR merged, mark the work item done: `python ${CLAUDE_PLUGIN_ROOT}/scripts/loop_product_os.py work-item --root . --id {work-item-id} --status done --pr {pr}`. When a linked issue was closed without a merged PR, do not mark it done; report the work item for human review.
+16. For work items past `draft` with empty `links.issues`, backfill the link: search `gh issue list --state all --search "{work-item-id} in:body" --json number,state`. Record found issue numbers with `--issue {number}`; report work items with no matching issue.
+17. Commit any `.product` changes per Committing .product Changes in `${CLAUDE_PLUGIN_ROOT}/references/product-os.md`.
