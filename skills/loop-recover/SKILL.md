@@ -14,7 +14,7 @@ Recover stale or inconsistent loop runs, and return resolved blocked issues to t
 1. List open issues with active labels: `loop:claimed`, `loop:in-progress`, `loop:pr-open`, or `loop:repairing`.
 2. Parse the latest structured run comment, including its `Worktree` path.
 3. Compare the run comment with branch, PR, CI, and review state.
-4. Add `run:stale` when `Updated` is older than policy `stale_after_minutes`.
+4. Judge the heartbeat with `python ${CLAUDE_PLUGIN_ROOT}/scripts/loop_comment.py heartbeat --updated {updated} --stale-after-minutes {stale_after_minutes}` and add `run:stale` when it reports `stale: true`. Do not compare timestamps by hand: the helper also treats corrupt heartbeats as stale — an `Updated` more than a few minutes in the future (for example a local time mislabeled as `Z`) or an unparsable value would otherwise keep a dead run holding its concurrency slot for hours.
 5. Resume when the next action is clear.
 6. Reassign when the original run is abandoned but state is safe. Preserve the existing run comment, including its `Repairs` counts, so the resuming run continues the repair budget instead of restarting it.
 7. Block when state is ambiguous or human decision is needed. When policy `notify_mentions` is non-empty (read `.loop-engineering.yml` through `${CLAUDE_PLUGIN_ROOT}/scripts/loop_repo_policy.py`), fill the blocked comment's cc line by @mentioning every listed username and assign the first one with `gh issue edit <number> --add-assignee <username>`, so GitHub's native notifications reach a human.

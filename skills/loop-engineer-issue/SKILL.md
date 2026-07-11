@@ -35,6 +35,8 @@ Do not exceed `pr_repair_limit` when resuming a repair. If the recorded repair c
 
 `loop-recover` judges staleness from the run comment's `Updated` timestamp. A long but healthy run (large change, dependency install, slow test suite) that never updates its comment looks abandoned and can be reassigned mid-flight — two agents on one issue is worse than a slow one. Treat the heartbeat as a contract: update `Updated` (and the relevant `Plan` / `Verification` / `Repairs` section) after each major step — claim, plan, implement, verify, PR open, and each repair attempt. Keep `stale_after_minutes` comfortably above your slowest expected step.
 
+Generate `Started` and `Updated` values from `date -u +%Y-%m-%dT%H:%M:%SZ` — never write them from memory or from the local clock. A local time mislabeled `Z` lands hours in the future, and recovery treats a future heartbeat as corrupt-and-stale, so a hand-written timestamp can get a healthy run reassigned or a dead run's slot held.
+
 ## Workflow
 
 1. Read the issue with `${CLAUDE_PLUGIN_ROOT}/scripts/loop_gh_issue_state.py get --issue <number>`.
@@ -55,8 +57,9 @@ Do not exceed `pr_repair_limit` when resuming a repair. If the recorded repair c
 13. Inspect CI and reviews.
 14. Repair failures within policy limits. Read the current counts from the run comment `Repairs` line, increment `local` for each local-verification repair and `pr` for each CI or review repair, and write the updated line back on every attempt. Stop when a count would exceed `local_repair_limit` or `pr_repair_limit`: mark `loop:blocked` plus `loop:needs-human` instead of repairing again. Because the counts live in the run comment, they survive a stale-and-reassign hand-off, so a resumed run cannot silently restart the repair budget.
 15. Merge only when repository policy and branch protection allow it.
-16. Add a final summary, clean transient labels, add `loop:done`, and close the issue.
-17. Remove the worktree (`git worktree remove <worktree_root>/<issue>`). Always clean up the worktree on stop or block as well, so it does not linger as an orphan.
+16. If merged: add a final summary, clean transient labels, add `loop:done`, and close the issue.
+17. If the PR cannot be merged in this run — `auto_merge` is false, CI is still pending, or branch protection requires a review — hand off instead of holding on: replace the active labels with `loop:pr-open` (remove `loop:claimed` and `loop:in-progress`, plus `loop:repairing` when this run resumed a repair), update the run comment, and end the run. This releases the concurrency slot — the active-run count deliberately excludes `loop:pr-open`, and `loop-review-pr` owns the merge from here. Ending a run with `loop:claimed`/`loop:in-progress` still on the issue deadlocks the whole loop at `max_concurrent_runs: 1` until the stale window expires.
+18. Remove the worktree (`git worktree remove <worktree_root>/<issue>`). Always clean up the worktree on stop, block, or the step 17 hand-off as well, so it does not linger as an orphan — the branch is pushed, and a resumed repair recreates the worktree from it (step 7).
 
 ## Stop Conditions
 

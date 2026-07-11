@@ -3,10 +3,43 @@ from __future__ import annotations
 import argparse
 import json
 import re
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 START = "<!-- loop-engineering:run v1 -->"
 END = "<!-- /loop-engineering:run -->"
+
+# Heartbeats further in the future than this are corrupt (e.g. a local time
+# mislabeled as Z), not merely clock skew.
+MAX_FUTURE_SKEW_MINUTES = 5
+
+
+def assess_heartbeat(
+    updated: str,
+    stale_after_minutes: int,
+    now: datetime | None = None,
+) -> dict[str, Any]:
+    """Judge a run comment's Updated heartbeat deterministically.
+
+    A corrupt heartbeat must count as stale: recovery compares "older than
+    stale_after_minutes", so a timestamp written hours in the future would
+    otherwise keep a dead run holding its concurrency slot until the
+    mislabeled clock catches up.
+    """
+    if now is None:
+        now = datetime.now(UTC)
+    try:
+        parsed = datetime.fromisoformat(updated.replace("Z", "+00:00"))
+    except ValueError:
+        return {"state": "invalid-format", "stale": True, "updated": updated}
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=UTC)
+
+    if parsed - now > timedelta(minutes=MAX_FUTURE_SKEW_MINUTES):
+        return {"state": "invalid-future", "stale": True, "updated": updated}
+    if now - parsed > timedelta(minutes=stale_after_minutes):
+        return {"state": "stale", "stale": True, "updated": updated}
+    return {"state": "fresh", "stale": False, "updated": updated}
 
 
 def _extract_block(body: str) -> str:
@@ -88,6 +121,9 @@ def main() -> int:
     parse_parser.add_argument("--body-file", required=True)
     render_parser = subparsers.add_parser("render")
     render_parser.add_argument("--data", required=True)
+    heartbeat_parser = subparsers.add_parser("heartbeat")
+    heartbeat_parser.add_argument("--updated", required=True)
+    heartbeat_parser.add_argument("--stale-after-minutes", type=int, required=True)
     args = parser.parse_args()
 
     if args.command == "parse":
@@ -95,6 +131,8 @@ def main() -> int:
             print(json.dumps(parse_run_comment(handle.read()), indent=2, sort_keys=True))
     if args.command == "render":
         print(render_run_comment(json.loads(args.data)))
+    if args.command == "heartbeat":
+        print(json.dumps(assess_heartbeat(args.updated, args.stale_after_minutes), indent=2, sort_keys=True))
     return 0
 
 

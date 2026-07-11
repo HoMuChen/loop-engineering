@@ -293,6 +293,8 @@ See [references/repo-policy.md](references/repo-policy.md) for what each key doe
 
 The skills are stages of a Product OS plus label-driven state machine, so they can run as independent scheduled jobs. `.product/` stores product context, while GitHub Issue labels are the shared execution state.
 
+Do not schedule `loop-engineer-issue` alone. It only takes issues from `loop:ready` to an open PR (and merges only when `auto_merge` allows and CI finishes within the run); without the other sweeps nothing reviews, merges, recovers, or closes, and the pipeline stalls after the first PR. The minimum useful set is `loop-engineer-issue` + `loop-review-pr` + `loop-recover` + `loop-close`, plus `auto_merge: true` if merges should not wait for a human.
+
 Claude Code example:
 
 ```cron
