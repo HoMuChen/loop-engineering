@@ -1,6 +1,6 @@
 {
   "name": "loop-engineering",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Product OS and GitHub Issue based full-loop engineering workflows for Claude Code and Codex.",
   "author": {
     "name": "HoMuChen"
