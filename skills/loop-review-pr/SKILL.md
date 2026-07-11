@@ -7,7 +7,7 @@ description: Use to review a PR connected to a loop engineering issue, prioritiz
 
 > Paths below use `${CLAUDE_PLUGIN_ROOT}` — this plugin's install directory. Claude Code substitutes it automatically; tools that do not (e.g. Codex) should resolve it as the plugin root, not the target repo.
 
-Review PRs with a bug-first stance. The reviewer, not the author run, owns the merge: when the review passes and policy allows, merge here instead of leaving the PR waiting. Without this, an approved green PR has no owner — the author run has already ended, and the issue would sit at `loop:pr-open` until the `loop-recover` stale window.
+Review PRs with a bug-first stance. The reviewer, not the author run, owns the merge — `loop-engineer-issue` never merges its own PR, so this skill is the only merge path for loop PRs. When the review passes and policy allows, merge here instead of leaving the PR waiting; otherwise an approved green PR has no owner and the issue sits at `loop:pr-open` indefinitely.
 
 ## Required Setup
 
@@ -37,7 +37,7 @@ Merge only when all of these hold:
 
 Then:
 
-1. Re-read PR state immediately before merging. If the PR is already merged (for example by the author run or another reviewer), skip the merge and treat the outcome as success — this race is expected and harmless.
+1. Re-read PR state immediately before merging. If the PR is already merged (for example by another reviewer run or a human), skip the merge and treat the outcome as success — this race is expected and harmless.
 2. If the PR is behind its base branch (merge state `BEHIND`), run `gh pr update-branch <number>` and stop here. Do not merge on checks that ran against a stale base; the refreshed CI is picked up by the next review pass.
 3. Merge with `${CLAUDE_PLUGIN_ROOT}/scripts/loop_gh_pr_state.py merge --pr <number> --method <merge_method>`.
 4. If the merge command fails because the PR was merged concurrently, treat it as success. If it fails because branch protection requires approvals the agent cannot give (a PR author account cannot approve its own PR), mark the issue `loop:blocked` plus `loop:needs-human`, state that a human approval is required, and notify per `notify_mentions`.

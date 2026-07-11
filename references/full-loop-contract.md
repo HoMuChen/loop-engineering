@@ -1,6 +1,6 @@
 # Full Loop Contract
 
-The agent may claim, implement, verify, open PRs, repair failures, merge, close, and clean up when repository policy allows it.
+The implementing agent may claim, implement, verify, open PRs, repair failures, and clean up when repository policy allows it. It never merges its own PR: merging belongs to the reviewing run (`loop-review-pr`) after an independent review passes, and closing belongs to `loop-close` after the merge. Author and approver are always different runs.
 
 The agent must stop for human input when:
 

@@ -25,7 +25,7 @@ loop_engineering:
     - HoMuChen
 ```
 
-`auto_merge` defaults to false. Repositories must opt in to automatic merging.
+`auto_merge` defaults to false. Repositories must opt in to automatic merging. It authorizes only `loop-review-pr` — the reviewing run, never the PR's author run — to merge, and only after its own review passes and CI is green. `loop-engineer-issue` always ends at the `loop:pr-open` hand-off, so every PR gets an independent review before it lands.
 
 `max_concurrent_runs` defaults to 1 (effectively serial). Raise it to allow that many `loop-engineer-issue` runs to work in parallel, each in its own git worktree. It is a soft cap counted from the active loop labels, so it can briefly overshoot when runs start simultaneously; per-issue claiming stays exclusive.
 

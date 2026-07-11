@@ -32,7 +32,7 @@ The Product OS layer adds:
 - `loop-split-feature`: split approved specs into work items and optionally prepared issues.
 - `loop-intake-quality`: scan the repo and file quality/safety findings as ready issues.
 - `loop-triage`: classify and prepare issues.
-- `loop-engineer-issue`: full issue loop from claim through close.
+- `loop-engineer-issue`: issue loop from claim to the reviewed-PR hand-off; never merges its own PR.
 - `loop-review-pr`: review loop PRs and merge approved ones when policy allows.
 - `loop-recover`: recover stale loop runs.
 - `loop-close`: finalize merged work.
@@ -116,7 +116,7 @@ Use the plugin as a product-to-PR pipeline:
 6. A human reviews the spec and changes its status to `spec-approved` or `ready-for-build`.
 7. `loop-split-feature` splits approved specs into small work items and, when allowed, GitHub Issues.
 8. `loop-triage` scans open issues, applies `kind:*` / priority / area labels, and marks actionable issues `loop:ready`.
-9. `loop-engineer-issue` claims one `loop:ready` issue, plans, implements, verifies, opens a PR, repairs CI or review failures, then merges when policy allows.
+9. `loop-engineer-issue` claims one `loop:ready` issue, plans, implements, verifies, opens a PR, repairs CI or review failures, then hands off at `loop:pr-open` — it never merges its own PR, so author and approver are always different runs.
 10. `loop-review-pr` reviews the PR bug-first, merges it when the review passes, CI is green, and `auto_merge` allows, or routes it back to repair or to a human when needed.
 11. `loop-recover` reconciles issue labels against branch, PR, CI, and review state for stale runs, and reconciles `.product` work items against closed issues so a missed close cannot leave permanent drift.
 12. `loop-close` adds a final summary, cleans transient labels, and closes completed issues.
@@ -293,7 +293,7 @@ See [references/repo-policy.md](references/repo-policy.md) for what each key doe
 
 The skills are stages of a Product OS plus label-driven state machine, so they can run as independent scheduled jobs. `.product/` stores product context, while GitHub Issue labels are the shared execution state.
 
-Do not schedule `loop-engineer-issue` alone. It only takes issues from `loop:ready` to an open PR (and merges only when `auto_merge` allows and CI finishes within the run); without the other sweeps nothing reviews, merges, recovers, or closes, and the pipeline stalls after the first PR. The minimum useful set is `loop-engineer-issue` + `loop-review-pr` + `loop-recover` + `loop-close`, plus `auto_merge: true` if merges should not wait for a human.
+Do not schedule `loop-engineer-issue` alone. It only takes issues from `loop:ready` to an open PR and never merges; `loop-review-pr` is the sole merge path. Without the other sweeps nothing reviews, merges, recovers, or closes, and the pipeline stalls after the first PR. The minimum useful set is `loop-engineer-issue` + `loop-review-pr` + `loop-recover` + `loop-close`, plus `auto_merge: true` if merges should not wait for a human.
 
 Claude Code example:
 

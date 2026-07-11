@@ -1,6 +1,6 @@
 ---
 name: loop-engineer-issue
-description: "Use when asked to take a GitHub Issue through the full engineering loop: claim, plan, implement, verify, open PR, repair CI or review failures, merge, close, and clean up."
+description: "Use when asked to take a GitHub Issue through the engineering loop: claim, plan, implement, verify, open PR, repair CI or review failures, and hand off for independent review and merge."
 ---
 
 # Loop Engineer Issue
@@ -56,10 +56,8 @@ Generate `Started` and `Updated` values from `date -u +%Y-%m-%dT%H:%M:%SZ` — n
 12. Open a PR with a body based on `${CLAUDE_PLUGIN_ROOT}/templates/pull-request.md`.
 13. Inspect CI and reviews.
 14. Repair failures within policy limits. Read the current counts from the run comment `Repairs` line, increment `local` for each local-verification repair and `pr` for each CI or review repair, and write the updated line back on every attempt. Stop when a count would exceed `local_repair_limit` or `pr_repair_limit`: mark `loop:blocked` plus `loop:needs-human` instead of repairing again. Because the counts live in the run comment, they survive a stale-and-reassign hand-off, so a resumed run cannot silently restart the repair budget.
-15. Merge only when repository policy and branch protection allow it.
-16. If merged: add a final summary, clean transient labels, add `loop:done`, and close the issue.
-17. If the PR cannot be merged in this run — `auto_merge` is false, CI is still pending, or branch protection requires a review — hand off instead of holding on: replace the active labels with `loop:pr-open` (remove `loop:claimed` and `loop:in-progress`, plus `loop:repairing` when this run resumed a repair), update the run comment, and end the run. This releases the concurrency slot — the active-run count deliberately excludes `loop:pr-open`, and `loop-review-pr` owns the merge from here. Ending a run with `loop:claimed`/`loop:in-progress` still on the issue deadlocks the whole loop at `max_concurrent_runs: 1` until the stale window expires.
-18. Remove the worktree (`git worktree remove <worktree_root>/<issue>`). Always clean up the worktree on stop, block, or the step 17 hand-off as well, so it does not linger as an orphan — the branch is pushed, and a resumed repair recreates the worktree from it (step 7).
+15. Hand off for review — this run never merges its own PR, regardless of `auto_merge`. Replace the active labels with `loop:pr-open` (remove `loop:claimed` and `loop:in-progress`, plus `loop:repairing` when this run resumed a repair), update the run comment, and end the run. Merging belongs exclusively to `loop-review-pr`: the author and the approver must be different runs, so every PR gets an independent bug-first review before it lands. The hand-off also releases the concurrency slot, since the active-run count deliberately excludes `loop:pr-open`; ending a run with `loop:claimed`/`loop:in-progress` still on the issue deadlocks the whole loop at `max_concurrent_runs: 1` until the stale window expires.
+16. Remove the worktree (`git worktree remove <worktree_root>/<issue>`). Always clean up the worktree on stop, block, or the hand-off as well, so it does not linger as an orphan — the branch is pushed, and a resumed repair recreates the worktree from it (step 7).
 
 ## Stop Conditions
 
