@@ -20,8 +20,18 @@ Scan open GitHub Issues and prepare them for agent work.
 1. Use `gh issue list --state open --json number,title,labels,assignees,url`.
 2. Classify each issue as `kind:bug`, `kind:feature`, `kind:refactor`, `kind:docs`, or `kind:chore`.
 3. Add priority and area labels when the issue text makes the choice clear.
-4. Add `loop:ready` only when the issue has enough information for implementation and verification.
-5. Add `loop:needs-human` when information is missing.
-6. Ask one concrete question using `${CLAUDE_PLUGIN_ROOT}/templates/comments/triage-question.md`. When `notify_mentions` is non-empty, fill the template's cc line by @mentioning every listed username and assign the first one with `gh issue edit <number> --add-assignee <username>`, so GitHub's native notifications reach a human; drop the cc line when `notify_mentions` is empty.
+4. **Convert prose gates into labels.** Read the body for a sentence demanding human
+   handling — *"Protected: schema migration → human review"*, *"touches secret handling
+   — human review required"*, *"needs sign-off before merge"*. Such a line is a triage
+   instruction that was never applied, and downstream agents cannot satisfy it: a label
+   can be removed by an approval, a sentence cannot. Apply the label the sentence is
+   asking for (`security`, `data-loss`, `migration`, `needs-human`, per
+   `protected_labels`), so the body and the labels agree. If the prose is stale and the
+   work is genuinely cleared, leave the labels non-blocking and say so in a comment —
+   but do not leave the sentence standing with no label behind it. See
+   `${CLAUDE_PLUGIN_ROOT}/references/labels.md` § The Gate Is The Labels, Not The Prose.
+5. Add `loop:ready` only when the issue has enough information for implementation and verification.
+6. Add `loop:needs-human` when information is missing.
+7. Ask one concrete question using `${CLAUDE_PLUGIN_ROOT}/templates/comments/triage-question.md`. When `notify_mentions` is non-empty, fill the template's cc line by @mentioning every listed username and assign the first one with `gh issue edit <number> --add-assignee <username>`, so GitHub's native notifications reach a human; drop the cc line when `notify_mentions` is empty.
 
 Do not edit code, create branches, open PRs, merge, or close issues.

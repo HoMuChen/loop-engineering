@@ -36,6 +36,11 @@ LABEL_CATALOG: list[dict[str, str]] = [
     {"name": "loop:blocked", "color": "b60205", "description": "Agent cannot continue without human input."},
     {"name": "loop:done", "color": "0e4429", "description": "Work is complete."},
     {"name": "loop:needs-human", "color": "fbca04", "description": "Human decision required."},
+    # Signal, not state: coexists with any state label and is deliberately NOT
+    # transient, so it survives `loop-close` as a durable record that a human
+    # actually looked. It is the only way to satisfy a gate — prose in an issue
+    # body cannot be lifted, a label can.
+    {"name": "loop:human-approved", "color": "0e8a16", "description": "A human reviewed and cleared this; agents may proceed and merge."},
     {"name": "run:stale", "color": "e99695", "description": "Recovery detected a stale run."},
     {"name": "agent:claude", "color": "d4c5f9", "description": "Claude owns or owned the current run."},
     {"name": "agent:codex", "color": "c5def5", "description": "Codex owns or owned the current run."},

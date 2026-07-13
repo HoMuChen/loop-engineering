@@ -38,22 +38,29 @@ def normalize_pr(raw: dict[str, Any]) -> dict[str, Any]:
         "title": raw.get("title"),
         "state": raw.get("state"),
         "url": raw.get("url"),
+        # The commit the diff currently resolves to. `loop-review-pr` records this
+        # in its review comment and compares it on the next run: an unchanged head
+        # means the diff under review is byte-for-byte the one already reviewed, so
+        # re-reviewing it can only produce a different verdict by chance, never by
+        # evidence. Without this field the reviewer has no way to know it is looking
+        # at the same code twice.
+        "head_sha": raw.get("headRefOid"),
         "merge_state": raw.get("mergeStateStatus"),
         "review_decision": raw.get("reviewDecision"),
         "ci": ci_summary(checks),
     }
 
 
+# `headRefOid` is load-bearing, not informational: it is what lets `loop-review-pr`
+# recognize a diff it has already reviewed. Removing it from this list would not fail
+# anything loudly — the reviewer would just quietly start re-reviewing unchanged code.
+GET_PR_JSON_FIELDS = (
+    "number,title,state,url,headRefOid,mergeStateStatus,reviewDecision,statusCheckRollup"
+)
+
+
 def get_pr(pr: str) -> dict[str, Any]:
-    raw = run_gh(
-        [
-            "pr",
-            "view",
-            pr,
-            "--json",
-            "number,title,state,url,mergeStateStatus,reviewDecision,statusCheckRollup",
-        ]
-    )
+    raw = run_gh(["pr", "view", pr, "--json", GET_PR_JSON_FIELDS])
     return normalize_pr(raw)
 
 
