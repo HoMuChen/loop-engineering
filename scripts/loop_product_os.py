@@ -222,6 +222,9 @@ def validate_product_os(root: Path = Path(".")) -> dict[str, Any]:
     product_root = _product_root(root)
     errors: list[str] = []
     warnings: list[str] = []
+    roadmap_status_by_id: dict[str, str] = {}
+    spec_status_by_id: dict[str, str] = {}
+    work_item_statuses_by_feature: dict[str, list[str]] = {}
 
     if not product_root.exists():
         return {
@@ -277,6 +280,8 @@ def validate_product_os(root: Path = Path(".")) -> dict[str, Any]:
                             continue
                         item_id = item.get("id", "<missing id>")
                         status = item.get("status")
+                        if isinstance(item_id, str) and isinstance(status, str):
+                            roadmap_status_by_id[item_id] = status
                         if status and status not in FEATURE_STATUSES:
                             warnings.append(f"roadmap item {item_id} has unknown status {status}")
 
@@ -289,9 +294,32 @@ def validate_product_os(root: Path = Path(".")) -> dict[str, Any]:
         status = spec.get("status")
         if status and status not in FEATURE_STATUSES:
             warnings.append(f"{path.relative_to(root)} has unknown status {status}")
-        for field in ("id", "title", "status", "problem", "scope", "acceptance_criteria"):
+        for field in (
+            "id",
+            "title",
+            "status",
+            "problem",
+            "approach",
+            "scope",
+            "non_goals",
+            "acceptance_criteria",
+            "validation",
+        ):
             if field not in spec:
                 warnings.append(f"{path.relative_to(root)} is missing {field}")
+        feature_id = spec.get("id")
+        if isinstance(feature_id, str) and isinstance(status, str):
+            spec_status_by_id[feature_id] = status
+        roadmap_status = roadmap_status_by_id.get(feature_id) if isinstance(feature_id, str) else None
+        if status in {"spec-draft", "spec-review", "spec-approved"} and roadmap_status is not None:
+            allowed_roadmap_statuses = {status}
+            if status == "spec-approved":
+                allowed_roadmap_statuses.add("ready-for-build")
+            if roadmap_status not in allowed_roadmap_statuses:
+                warnings.append(
+                    f"{path.relative_to(root)} status {status} does not match roadmap item "
+                    f"{feature_id} status {roadmap_status}"
+                )
 
     for path in sorted((product_root / "work-items").glob("*.yaml")):
         try:
@@ -300,6 +328,9 @@ def validate_product_os(root: Path = Path(".")) -> dict[str, Any]:
             errors.append(f"{path.relative_to(root)} is invalid YAML: {exc}")
             continue
         status = item.get("status")
+        feature_id = item.get("feature_id")
+        if isinstance(feature_id, str) and isinstance(status, str):
+            work_item_statuses_by_feature.setdefault(feature_id, []).append(status)
         if status and status not in WORK_ITEM_STATUSES:
             warnings.append(f"{path.relative_to(root)} has unknown status {status}")
         elif status in DERIVED_WORK_ITEM_STATUSES:
@@ -307,9 +338,45 @@ def validate_product_os(root: Path = Path(".")) -> dict[str, Any]:
                 f"{path.relative_to(root)} stores derived status {status}; "
                 "execution state lives in the linked GitHub issue, not in YAML"
             )
-        for field in ("id", "feature_id", "title", "status", "definition_of_done", "validation"):
+        for field in (
+            "id",
+            "feature_id",
+            "title",
+            "sequence",
+            "depends_on",
+            "status",
+            "goal",
+            "files",
+            "interfaces",
+            "spec_criteria",
+            "definition_of_done",
+            "validation",
+        ):
             if field not in item:
                 warnings.append(f"{path.relative_to(root)} is missing {field}")
+
+    for feature_id, roadmap_status in roadmap_status_by_id.items():
+        if roadmap_status in {"spec-draft", "spec-review", "spec-approved", "ready-for-build"}:
+            spec_status = spec_status_by_id.get(feature_id)
+            if spec_status is None:
+                warnings.append(
+                    f"roadmap item {feature_id} is {roadmap_status} but has no matching feature spec"
+                )
+            elif roadmap_status == "ready-for-build" and spec_status != "spec-approved":
+                warnings.append(
+                    f"roadmap item {feature_id} is ready-for-build but its feature spec is {spec_status}; "
+                    "expected spec-approved"
+                )
+        if roadmap_status == "ready-for-build":
+            work_item_statuses = work_item_statuses_by_feature.get(feature_id, [])
+            if not work_item_statuses:
+                warnings.append(
+                    f"roadmap item {feature_id} is ready-for-build but has no work-item plan"
+                )
+            elif any(status in {"draft", "needs-review"} for status in work_item_statuses):
+                warnings.append(
+                    f"roadmap item {feature_id} is ready-for-build but its work-item plan still needs review"
+                )
 
     return {
         "ok": not errors,

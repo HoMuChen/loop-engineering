@@ -14,6 +14,7 @@ The Product OS layer adds:
 
 - `.product/` as the product source of truth.
 - Roadmap, feature specs, work items, decisions, feedback, metrics, and release notes.
+- A human-gated brainstorming → spec → plan flow adapted from [Superpowers](https://github.com/obra/superpowers).
 - A guarded path from product intent to ready GitHub Issues.
 - GitHub Milestones (one per feature) that group a feature's work-item issues and track completion progress.
 
@@ -28,8 +29,8 @@ The Product OS layer adds:
 - `loop-product-init`: initialize or repair `.product/`, inspect the repo, and guide the first product brief / roadmap draft.
 - `loop-product-review`: summarize product progress, blockers, risks, and next steps.
 - `loop-roadmap-update`: apply explicit user-approved changes to `.product/roadmap.yaml`.
-- `loop-spec-feature`: draft feature specs from roadmap items.
-- `loop-split-feature`: split approved specs into work items and optionally prepared issues.
+- `loop-spec-feature`: brainstorm feature direction, write and revise specs, and record explicit spec approval.
+- `loop-split-feature`: turn approved specs into reviewed implementation plans of work items and optionally prepared issues.
 - `loop-intake-quality`: scan the repo and file quality/safety findings as ready issues.
 - `loop-triage`: classify and prepare issues.
 - `loop-engineer-issue`: issue loop from claim to the reviewed-PR hand-off; never merges its own PR.
@@ -94,9 +95,9 @@ codex exec "Review the current Product OS status"
 | --- | --- | --- |
 | Initialize Product OS | `Initialize Product OS for this repo and draft it from the codebase` | `loop-product-init` |
 | Review product progress | `Review the current Product OS status` | `loop-product-review` |
-| Update roadmap | `Update Product OS roadmap: move line-inbox-v1 to now and set status to ready-for-build` | `loop-roadmap-update` |
-| Draft a feature spec | `Draft the next Product OS feature spec` | `loop-spec-feature` |
-| Split an approved feature | `Split the approved feature into work items` | `loop-split-feature` |
+| Update roadmap | `Update Product OS roadmap: move line-inbox-v1 to now` | `loop-roadmap-update` |
+| Brainstorm or draft a feature spec | `Brainstorm and draft the next Product OS feature spec` | `loop-spec-feature` |
+| Plan an approved feature | `Turn the approved feature spec into a work-item plan` | `loop-split-feature` |
 | Generate quality/safety issues from the code | `Scan this repo for quality and security issues` | `loop-intake-quality` |
 | Prepare new issues for agents | `Triage open loop engineering issues` | `loop-triage` |
 | Run an issue end-to-end | `Take GitHub issue #123 through the loop` | `loop-engineer-issue` |
@@ -112,15 +113,16 @@ Use the plugin as a product-to-PR pipeline:
 2. `loop-product-init` inspects the codebase, drafts product brief / roadmap content, and asks a human to confirm assumptions.
 3. A human approves or corrects `.product/product-brief.md` and `.product/roadmap.yaml`.
 4. `loop-roadmap-update` applies explicit human-approved roadmap changes.
-5. `loop-spec-feature` drafts specs for roadmap items with `needs-spec`.
-6. A human reviews the spec and changes its status to `spec-approved` or `ready-for-build`.
-7. `loop-split-feature` splits approved specs into small work items and, when allowed, GitHub Issues.
-8. `loop-triage` scans open issues, applies `kind:*` / priority / area labels, and marks actionable issues `loop:ready`.
-9. `loop-engineer-issue` claims one `loop:ready` issue, plans, implements, verifies, opens a PR, repairs CI or review failures, then hands off at `loop:pr-open` — it never merges its own PR, so author and approver are always different runs.
-10. `loop-review-pr` reviews the PR bug-first, merges it when the review passes, CI is green, and `auto_merge` allows, or routes it back to repair or to a human when needed.
-11. `loop-recover` reconciles issue labels against branch, PR, CI, and review state for stale runs, and reconciles `.product` work items against closed issues so a missed close cannot leave permanent drift.
-12. `loop-close` adds a final summary, cleans transient labels, and closes completed issues.
-13. `loop-product-review` summarizes product progress, blockers, risks, and recommended next steps.
+5. `loop-spec-feature` brainstorms material choices, compares approaches, and drafts a spec for a `needs-discovery` or `needs-spec` feature.
+6. The skill self-reviews the written spec and moves it to `spec-review`; a human separately reviews and explicitly approves that artifact as `spec-approved`.
+7. `loop-split-feature` maps file responsibilities and turns the approved spec into ordered `needs-review` work items with dependencies, interfaces, spec traceability, and exact validation.
+8. A human reviews the work-item plan. Only plan-approved work items and the matching roadmap feature move to `ready-for-build`, after which the skill may create GitHub Issues.
+9. `loop-triage` scans open issues, applies `kind:*` / priority / area labels, and marks actionable issues `loop:ready`.
+10. `loop-engineer-issue` claims one `loop:ready` issue, plans, implements, verifies, opens a PR, repairs CI or review failures, then hands off at `loop:pr-open` — it never merges its own PR, so author and approver are always different runs.
+11. `loop-review-pr` reviews the PR bug-first, merges it when the review passes, CI is green, and `auto_merge` allows, or routes it back to repair or to a human when needed.
+12. `loop-recover` reconciles issue labels against branch, PR, CI, and review state for stale runs, and reconciles `.product` work items against closed issues so a missed close cannot leave permanent drift.
+13. `loop-close` adds a final summary, cleans transient labels, and closes completed issues.
+14. `loop-product-review` summarizes product progress, blockers, risks, and recommended next steps.
 
 ### Recommended cadence
 
@@ -129,8 +131,8 @@ Use the plugin as a product-to-PR pipeline:
 | `loop-product-init` | `Initialize Product OS for this repo and draft it from the codebase` | Once per repo, then only when repairing missing Product OS files | `.product/` skeleton, then approved product brief / roadmap content |
 | `loop-product-review` | `Review the current Product OS status` | Daily or weekly; also before planning sessions | Report only by default |
 | `loop-roadmap-update` | `Update Product OS roadmap: move line-inbox-v1 to now` | On demand after explicit product direction | `.product/roadmap.yaml`, optional decision note |
-| `loop-spec-feature` | `Draft the next Product OS feature spec` | Daily or on demand while roadmap has `needs-spec` items | `.product/feature-specs/*.yaml` |
-| `loop-split-feature` | `Split the approved feature into work items` | After human spec approval | `.product/work-items/*.yaml`, optional GitHub Issues |
+| `loop-spec-feature` | `Brainstorm and draft the next Product OS feature spec` | Interactively for discovery; on demand for spec drafting or revision | `.product/feature-specs/*.yaml`, matching roadmap status |
+| `loop-split-feature` | `Turn the approved feature spec into a work-item plan` | After human spec approval | `.product/work-items/*.yaml`, matching roadmap status, optional GitHub Issues after plan approval |
 | `loop-intake-quality` | `Scan this repo for quality and security issues` | Nightly or weekly | GitHub Issues |
 | `loop-triage` | `Triage open loop engineering issues` | Every 15-30 minutes, or before build runs | GitHub labels/comments |
 | `loop-engineer-issue` | `Take the next ready or repairing loop engineering issue through the loop` | Every 5-15 minutes, capped by `max_concurrent_runs` | Branches, PRs, labels/comments |
@@ -161,7 +163,7 @@ The init agent first creates the `.product/` skeleton, then inspects the codebas
 
 It should separate repo-backed facts from assumptions, ask you to confirm target users / MVP scope / non-goals when unclear, and only write non-placeholder product strategy after approval.
 
-Set roadmap items to statuses such as `needs-spec`, `spec-approved`, or `ready-for-build`. Product OS skills can draft and split work, but humans should approve product priority, MVP scope, and high-risk features.
+Set roadmap items to statuses such as `needs-discovery`, `needs-spec`, `spec-review`, `spec-approved`, or `ready-for-build`. Product OS skills can facilitate discovery, draft specs, and prepare plans, but humans separately approve written specs and work-item plans as well as product priority, MVP scope, and high-risk features.
 
 The loop relies on a set of labels (`loop:*`, `kind:*`, `agent:*`, `run:stale`, and the protected labels). `loop-triage` and `loop-intake-quality` ensure them automatically on each run, so a brand-new repository does not fail its first labeling call. To pre-create them yourself, run the helper from the plugin's own directory (see [Helper script paths](#helper-script-paths)):
 
@@ -172,7 +174,8 @@ python "$CLAUDE_PLUGIN_ROOT/scripts/loop_labels.py" ensure
 To change roadmap state through conversation, use an explicit instruction:
 
 ```bash
-claude -p "Update Product OS roadmap: move line-inbox-v1 to now and set status to ready-for-build"
+claude -p "Update Product OS roadmap: move line-inbox-v1 to now"
+claude -p "I reviewed and approve the work-item plan for line-inbox-v1; mark it ready-for-build"
 codex exec "Update Product OS roadmap: add human-handoff to next as needs-spec"
 ```
 
@@ -181,35 +184,43 @@ Exploratory prompts such as "what should we do next?" should produce recommendat
 ### Typical product development flow
 
 ```bash
-# 1. Draft a spec from roadmap.needs-spec
-claude -p "Draft the next Product OS feature spec"
+# 1. Brainstorm and draft a spec from roadmap.needs-discovery or needs-spec
+claude -p "Brainstorm and draft the next Product OS feature spec"
 
-# 2. Apply an explicit human-approved roadmap change when needed
+# 2. Review the written spec, request revisions, then explicitly approve it
+claude -p "I reviewed .product/feature-specs/line-inbox-v1.yaml and approve this spec"
+
+# 3. Apply an explicit human-approved roadmap change when needed
 claude -p "Update Product OS roadmap: move line-inbox-v1 to now"
 
-# 3. After human review and approval, split the feature
-claude -p "Split the approved feature into work items"
+# 4. Turn the approved spec into a work-item plan, then review that plan separately
+claude -p "Turn the approved feature spec into a work-item plan"
 
-# 4. Prepare GitHub Issues for execution
+# 5. After approving the written work items, prepare GitHub Issues for execution
+claude -p "I approve the work-item plan; mark it ready and create the GitHub Issues"
+
+# 6. Prepare any other GitHub Issues for execution
 claude -p "Triage open loop engineering issues"
 
-# 5. Build one ready issue
+# 7. Build one ready issue
 claude -p "Take the next ready or repairing loop engineering issue through the loop"
 
-# 6. Review and recover
+# 8. Review and recover
 claude -p "Review open loop engineering PRs"
 claude -p "Recover stale loop engineering runs"
 
-# 7. Summarize product state
+# 9. Summarize product state
 claude -p "Review the current Product OS status"
 ```
 
 Codex equivalent:
 
 ```bash
-codex exec "Draft the next Product OS feature spec"
+codex exec "Brainstorm and draft the next Product OS feature spec"
+codex exec "I reviewed .product/feature-specs/line-inbox-v1.yaml and approve this spec"
 codex exec "Update Product OS roadmap: move line-inbox-v1 to now"
-codex exec "Split the approved feature into work items"
+codex exec "Turn the approved feature spec into a work-item plan"
+codex exec "I approve the work-item plan; mark it ready and create the GitHub Issues"
 codex exec "Triage open loop engineering issues"
 codex exec "Take the next ready or repairing loop engineering issue through the loop"
 codex exec "Review open loop engineering PRs"
@@ -235,6 +246,16 @@ Product OS is optional but recommended for autonomous product development. It ma
 ```
 
 Use `.product/` as the product source of truth and GitHub Issues as the execution source of truth. Agents may draft specs, split approved specs, update progress from facts, summarize feedback, and recommend roadmap changes. Agents must not independently change product priority, expand MVP scope, approve high-risk work, or implement directly from roadmap entries.
+
+The planning path is deliberately gated:
+
+```text
+needs-discovery -> brainstorm -> spec-review -> human spec approval
+  -> spec-approved -> work-item plan -> human plan approval
+  -> ready-for-build -> GitHub Issues -> engineering loop
+```
+
+Approach selection, written spec approval, and work-item plan approval are distinct decisions. See `references/product-planning.md` for the interaction, decomposition, traceability, and self-review rules.
 
 Initialize it with:
 
@@ -300,10 +321,10 @@ Claude Code example:
 ```cron
 # Product review (daily)
 0 9 * * *      cd /path/to/repo && claude -p "Review the current Product OS status"
-# Draft feature specs while roadmap has needs-spec items (daily)
-15 9 * * *     cd /path/to/repo && claude -p "Draft the next Product OS feature spec"
-# Split approved specs into work items / prepared issues (hourly)
-0 * * * *      cd /path/to/repo && claude -p "Split the approved feature into work items"
+# Draft reviewable specs from sufficiently defined needs-spec items (daily)
+15 9 * * *     cd /path/to/repo && claude -p "Draft the next Product OS feature spec; leave unresolved choices open for human review"
+# Draft work-item plans from approved specs (hourly; new plans remain needs-review)
+0 * * * *      cd /path/to/repo && claude -p "Turn the next approved feature spec into a work-item plan"
 # Generate quality/safety issues from the codebase (nightly is plenty)
 0 3 * * *     cd /path/to/repo && claude -p "Scan this repo for quality and security issues"
 # Prepare new issues
@@ -322,8 +343,8 @@ Codex example:
 
 ```cron
 0 9 * * *      cd /path/to/repo && codex exec "Review the current Product OS status"
-15 9 * * *     cd /path/to/repo && codex exec "Draft the next Product OS feature spec"
-0 * * * *      cd /path/to/repo && codex exec "Split the approved feature into work items"
+15 9 * * *     cd /path/to/repo && codex exec "Draft the next Product OS feature spec; leave unresolved choices open for human review"
+0 * * * *      cd /path/to/repo && codex exec "Turn the next approved feature spec into a work-item plan"
 0 3 * * *      cd /path/to/repo && codex exec "Scan this repo for quality and security issues"
 */15 * * * *   cd /path/to/repo && codex exec "Triage open loop engineering issues"
 */7  * * * *   cd /path/to/repo && codex exec "Take the next ready or repairing loop engineering issue through the loop"

@@ -49,7 +49,7 @@ Separate facts from assumptions. Cite concrete repo evidence by file path when e
 
 Prefer asking a few high-impact questions over inventing strategy. At minimum, clarify target users, MVP scope, and non-goals when they are not evident from the codebase.
 
-Keep generated roadmap conservative. Use `needs-spec` for features that require product definition, `spec-approved` only when the user has already approved the spec, and `ready-for-build` only when scope and validation are clear.
+Keep generated roadmap conservative. Use `needs-discovery` when material product choices remain and `needs-spec` when the feature is coherent enough to draft. Import `spec-approved` or `ready-for-build` only when matching reviewed specs and work-item plans already exist and the user confirms their respective approval gates.
 
 If the user explicitly asks for a quick init or repair only, stop after creating or repairing the skeleton and validating it.
 
@@ -59,6 +59,6 @@ Do not overwrite an existing product brief, roadmap, feature spec, work item, de
 
 Do not write inferred product strategy into `.product/` without explicit user approval.
 
-Do not mark features `spec-approved` or `ready-for-build` unless the user approves that status.
+Do not mark features `spec-approved` or `ready-for-build` without both the required artifact and explicit user approval of that artifact. Product OS initialization must not bypass spec or plan review.
 
 Do not create GitHub Issues, branches, pull requests, or code changes. This skill only initializes or repairs the Product OS structure.

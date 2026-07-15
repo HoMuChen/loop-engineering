@@ -75,6 +75,144 @@ def test_validate_product_os_warns_on_stored_derived_status(tmp_path: Path):
     assert any("derived" in warning for warning in result["warnings"])
 
 
+def test_validate_product_os_warns_on_mismatched_spec_and_roadmap_status(tmp_path: Path):
+    init_product_os(tmp_path)
+    (tmp_path / ".product" / "roadmap.yaml").write_text(
+        """
+roadmap:
+  now:
+    - id: inbox-v1
+      title: Inbox
+      status: needs-spec
+  next: []
+  later: []
+  icebox: []
+""",
+        encoding="utf-8",
+    )
+    (tmp_path / ".product" / "feature-specs" / "inbox-v1.yaml").write_text(
+        """
+id: inbox-v1
+title: Inbox
+status: spec-review
+problem: Users need an inbox.
+approach: {summary: Add an inbox, rationale: Fits the product.}
+scope: [Show messages]
+non_goals: [Sending messages]
+acceptance_criteria: [Users can see messages]
+validation: [Run the inbox tests]
+""",
+        encoding="utf-8",
+    )
+
+    result = validate_product_os(tmp_path)
+
+    assert result["ok"] is True
+    assert any("does not match roadmap item" in warning for warning in result["warnings"])
+
+
+def test_validate_product_os_accepts_approved_spec_with_ready_roadmap(tmp_path: Path):
+    init_product_os(tmp_path)
+    (tmp_path / ".product" / "roadmap.yaml").write_text(
+        """
+roadmap:
+  now:
+    - id: inbox-v1
+      title: Inbox
+      status: ready-for-build
+  next: []
+  later: []
+  icebox: []
+""",
+        encoding="utf-8",
+    )
+    (tmp_path / ".product" / "feature-specs" / "inbox-v1.yaml").write_text(
+        """
+id: inbox-v1
+title: Inbox
+status: spec-approved
+problem: Users need an inbox.
+approach: {summary: Add an inbox, rationale: Fits the product.}
+scope: [Show messages]
+non_goals: [Sending messages]
+acceptance_criteria: [Users can see messages]
+validation: [Run the inbox tests]
+""",
+        encoding="utf-8",
+    )
+    (tmp_path / ".product" / "work-items" / "wi-inbox-v1-001.yaml").write_text(
+        """
+id: wi-inbox-v1-001
+feature_id: inbox-v1
+title: Build inbox
+sequence: 1
+depends_on: []
+status: ready-for-build
+goal: Users can see messages.
+files: {create: [], modify: [src/inbox.py], test: [tests/test_inbox.py]}
+interfaces: {consumes: [], produces: [render_inbox]}
+spec_criteria: [Users can see messages]
+definition_of_done: [Inbox renders messages]
+validation: [{command: pytest tests/test_inbox.py, expected: Tests pass.}]
+""",
+        encoding="utf-8",
+    )
+
+    result = validate_product_os(tmp_path)
+
+    assert not any("does not match roadmap item" in warning for warning in result["warnings"])
+    assert not any("has no work-item plan" in warning for warning in result["warnings"])
+
+
+def test_validate_product_os_warns_when_ready_feature_plan_needs_review(tmp_path: Path):
+    init_product_os(tmp_path)
+    (tmp_path / ".product" / "roadmap.yaml").write_text(
+        """
+roadmap:
+  now:
+    - id: inbox-v1
+      title: Inbox
+      status: ready-for-build
+  next: []
+  later: []
+  icebox: []
+""",
+        encoding="utf-8",
+    )
+    (tmp_path / ".product" / "feature-specs" / "inbox-v1.yaml").write_text(
+        """
+id: inbox-v1
+title: Inbox
+status: spec-approved
+problem: Users need an inbox.
+approach: {summary: Add an inbox, rationale: Fits the product.}
+scope: [Show messages]
+non_goals: [Sending messages]
+acceptance_criteria: [Users can see messages]
+validation: [Run the inbox tests]
+""",
+        encoding="utf-8",
+    )
+    _write_work_item(
+        tmp_path,
+        "wi-inbox-v1-001",
+        feature_id="inbox-v1",
+        status="needs-review",
+        sequence=1,
+        depends_on=[],
+        goal="Users can see messages.",
+        files={"create": [], "modify": ["src/inbox.py"], "test": ["tests/test_inbox.py"]},
+        interfaces={"consumes": [], "produces": ["render_inbox"]},
+        spec_criteria=["Users can see messages"],
+        definition_of_done=["Inbox renders messages"],
+        validation=[{"command": "pytest tests/test_inbox.py", "expected": "Tests pass."}],
+    )
+
+    result = validate_product_os(tmp_path)
+
+    assert any("work-item plan still needs review" in warning for warning in result["warnings"])
+
+
 def test_update_work_item_reports_missing_file(tmp_path: Path):
     init_product_os(tmp_path)
 

@@ -38,6 +38,16 @@ Agents must not independently move features into Now, raise priority, expand MVP
 
 Use `loop-roadmap-update` for explicit user-approved roadmap edits. Vague requests such as "what should we do next?" should produce recommendations rather than direct file edits.
 
+## Planning Flow
+
+Product planning uses three gates before engineering begins. Read `references/product-planning.md` for the full interaction and self-review rules.
+
+1. **Brainstorm** (`loop-spec-feature`): inspect context, resolve material choices one question at a time, compare viable approaches, and confirm the design direction.
+2. **Spec** (`loop-spec-feature`): write and self-review `.product/feature-specs/{feature-id}.yaml`, then wait for explicit human approval of the written artifact.
+3. **Plan** (`loop-split-feature`): map file responsibilities and split the approved spec into ordered `.product/work-items/*.yaml`, then wait for separate plan approval.
+
+Do not collapse these approvals. Choosing an approach is not approval of the written spec, and approving the spec is not approval of newly generated work items.
+
 ## Roadmap Sections
 
 - `now`: Current product focus. Only approved or ready features in this section may move toward build.
@@ -48,12 +58,12 @@ Use `loop-roadmap-update` for explicit user-approved roadmap edits. Vague reques
 ## Feature Statuses
 
 - `idea`: Organize only.
-- `needs-discovery`: Research and collect questions.
-- `needs-spec`: Draft a feature spec.
-- `spec-draft`: Improve the draft and list open questions.
-- `spec-review`: Wait for human review.
-- `spec-approved`: Split into work items.
-- `ready-for-build`: May create execution issues for ready work items.
+- `needs-discovery`: Research context and resolve material product choices through brainstorming.
+- `needs-spec`: The feature is coherent enough to draft a written spec.
+- `spec-draft`: Improve the written artifact and resolve its material open questions.
+- `spec-review`: The self-reviewed written spec awaits human review.
+- `spec-approved`: The human approved the written spec; create a work-item plan next.
+- `ready-for-build`: The human approved the work-item plan; ready work items may become execution issues.
 - `in-progress`: Track active issue or PR progress.
 - `blocked`: Explain blocker; do not force implementation.
 - `in-review`: Wait for review.
@@ -93,7 +103,7 @@ Skills that write `.product/` (`loop-product-init`, `loop-roadmap-update`, `loop
 
 ## Build Rule
 
-Only one work item should be built per agent run. A builder should receive product brief context, the feature spec, one work item, non-goals, risk, definition of done, and verification commands.
+Only one work item should be built per agent run. A work item is one independently testable and reviewable issue-to-PR unit, not a tiny coding step. A builder should receive product brief context, the feature spec, one work item, non-goals, risk, file paths, dependencies, interfaces, traced spec criteria, definition of done, and verification commands with expected results.
 
 ## Milestones
 

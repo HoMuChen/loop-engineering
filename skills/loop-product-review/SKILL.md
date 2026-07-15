@@ -15,6 +15,7 @@ Review product progress from Product OS and the GitHub Issue engineering loop. P
 - Confirm the current directory is a git repository with a GitHub remote.
 - Read repository instructions such as `AGENTS.md`, `CLAUDE.md`, or equivalent when present.
 - Read `${CLAUDE_PLUGIN_ROOT}/references/product-os.md`.
+- Read `${CLAUDE_PLUGIN_ROOT}/references/product-planning.md`.
 - Run `python ${CLAUDE_PLUGIN_ROOT}/scripts/loop_product_os.py validate --root .`.
 - Run `python ${CLAUDE_PLUGIN_ROOT}/scripts/loop_product_os.py status --root . --json`.
 
@@ -28,8 +29,10 @@ Review product progress from Product OS and the GitHub Issue engineering loop. P
 6. Inspect feature milestones with `python ${CLAUDE_PLUGIN_ROOT}/scripts/loop_gh_milestone.py list` to read per-feature completion progress (a milestone maps to one feature; see `${CLAUDE_PLUGIN_ROOT}/references/product-os.md`).
 7. Inspect structured loop run comments when needed.
 8. Derive each work item's execution state from its `links.issues` at read time — `loop:claimed`/`loop:in-progress`/`loop:repairing` mean in-progress, `loop:blocked` means blocked, `loop:pr-open` means in-review (see Work Item Statuses in `${CLAUDE_PLUGIN_ROOT}/references/product-os.md`). Work item YAML stores intent (`draft`, `needs-review`, `ready-for-build`) and the terminal `done` only; a stored `in-progress`/`blocked`/`in-review` is itself a state inconsistency to report.
-9. Compare roadmap and work item status with issue, PR, and milestone facts.
-10. Report completed work, in-progress work, blockers, stale or inconsistent state, risk, and next recommended action.
+9. Compare roadmap, feature spec, and work-item planning statuses. Report missing artifacts, mismatched statuses, and any `ready-for-build` feature whose work-item plan is absent or still needs review.
+10. Identify the next planning gate for each pre-build feature: brainstorm, spec draft/revision, written spec review, work-item planning, or written plan review.
+11. Compare roadmap and work item status with issue, PR, and milestone facts.
+12. Report completed work, in-progress work, blockers, stale or inconsistent state, risk, and next recommended action.
 
 ## Output
 
@@ -38,6 +41,7 @@ Use this structure:
 - Product snapshot
 - Completed since last review, when inferable
 - Current roadmap status, with feature milestone completion progress when available
+- Planning gate awaiting action
 - Active work items and PRs
 - Blockers and risks
 - State inconsistencies

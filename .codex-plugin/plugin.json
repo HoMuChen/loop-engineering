@@ -23,7 +23,7 @@
   "interface": {
     "displayName": "Loop Engineering",
     "shortDescription": "Run Product OS and GitHub Issue engineering loops",
-    "longDescription": "Use Loop Engineering to initialize Product OS, draft feature specs, split approved specs into work items, triage GitHub Issues, claim ready work, implement and verify changes, open and review pull requests, recover stale runs, and close completed issues with structured run metadata.",
+    "longDescription": "Use Loop Engineering to initialize Product OS, brainstorm and review feature specs, turn approved specs into work-item plans, triage GitHub Issues, claim ready work, implement and verify changes, open and review pull requests, recover stale runs, and close completed issues with structured run metadata.",
     "developerName": "HoMuChen",
     "category": "Developer Tools",
     "capabilities": [
@@ -38,7 +38,8 @@
       "Initialize Product OS for this repo",
       "Review the current Product OS status",
       "Update Product OS roadmap",
-      "Draft the next Product OS feature spec",
+      "Brainstorm and draft the next Product OS feature spec",
+      "Turn the approved feature spec into a work-item plan",
       "Triage open loop engineering issues",
       "Take this GitHub issue through the loop",
       "Review this loop engineering PR"

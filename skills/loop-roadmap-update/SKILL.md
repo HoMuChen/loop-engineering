@@ -14,6 +14,7 @@ Update Product OS roadmap state when the user gives explicit product direction. 
 - Confirm `.product/` exists. If missing, use `loop-product-init` first.
 - Read repository instructions such as `AGENTS.md`, `CLAUDE.md`, or equivalent when present.
 - Read `${CLAUDE_PLUGIN_ROOT}/references/product-os.md`.
+- Read `${CLAUDE_PLUGIN_ROOT}/references/product-planning.md` when changing a planning status from `needs-discovery` through `ready-for-build`.
 - Run `python ${CLAUDE_PLUGIN_ROOT}/scripts/loop_product_os.py validate --root .`.
 - Read `.product/product-brief.md` and `.product/roadmap.yaml`.
 - Read relevant `.product/feature-specs/*.yaml`, `.product/work-items/*.yaml`, decisions, feedback, GitHub Issues, and PRs when the update depends on current facts.
@@ -22,8 +23,10 @@ Update Product OS roadmap state when the user gives explicit product direction. 
 
 Apply roadmap changes when the user gives explicit direction, for example:
 
-- "Move `line-inbox-v1` to Now and set it to `ready-for-build`."
+- "Move `line-inbox-v1` to Now."
 - "Add `human-handoff` to Next as `needs-spec`."
+- "I reviewed and approve the written spec for `line-inbox-v1`; mark it `spec-approved`."
+- "I reviewed and approve the work-item plan for `line-inbox-v1`; mark it `ready-for-build`."
 - "Mark `role-permission-v1` released."
 - "Move analytics dashboard to Later."
 
@@ -48,14 +51,21 @@ Explicit user approval is required before applying changes that:
 
 If the user's latest message already explicitly requests one of those changes, treat that as approval for the named change. If the request is ambiguous, ask for confirmation instead of editing.
 
+Artifact gates still apply to explicit requests:
+
+- Before `spec-approved`, require a matching written feature spec that passed self-review and confirmation that the user reviewed that artifact. Update the spec status with the roadmap status; use `loop-spec-feature` behavior when revisions are needed.
+- Before `ready-for-build`, require a matching `spec-approved` feature spec plus a complete work-item plan. Require confirmation that the user reviewed the written work items, then update the approved work items to `ready-for-build` with the roadmap item; use `loop-split-feature` behavior when a plan is missing or incomplete.
+- Do not use a direct roadmap edit to bypass brainstorming, spec review, or plan review.
+
 ## Workflow
 
 1. Parse the requested roadmap changes.
 2. Validate that target sections are one of `now`, `next`, `later`, or `icebox`.
 3. Validate that feature statuses are defined in `${CLAUDE_PLUGIN_ROOT}/references/product-os.md`.
-4. Preserve existing roadmap item fields such as `id`, `title`, `priority`, `status`, `progress`, `prs`, and `next_recommended_work_item`.
-5. Apply only the requested changes to `.product/roadmap.yaml`.
-6. When adding a new roadmap item, include at least:
+4. For `spec-approved` or `ready-for-build`, validate the required artifact and approval gate above. If the artifact is missing, report the correct next skill instead of applying the status.
+5. Preserve existing roadmap item fields such as `id`, `title`, `priority`, `status`, `progress`, `prs`, and `next_recommended_work_item`.
+6. Apply only the requested changes to `.product/roadmap.yaml` and any explicitly gate-coupled spec or work-item status updates.
+7. When adding a new roadmap item, include at least:
 
 ```yaml
 id: feature-id
@@ -64,16 +74,16 @@ priority: P1
 status: needs-spec
 ```
 
-7. Add or update `.product/decisions/{yyyy-mm-dd}-roadmap-update.md` when the change affects priority, scope, Now/Next/Later placement, or release status.
-8. Run `python ${CLAUDE_PLUGIN_ROOT}/scripts/loop_product_os.py validate --root .`.
-9. Commit the `.product` changes per Committing .product Changes in `${CLAUDE_PLUGIN_ROOT}/references/product-os.md`.
-10. Summarize exact changes, any decision file written, validation warnings, and follow-up work such as spec drafting or work item splitting.
+8. Add or update `.product/decisions/{yyyy-mm-dd}-roadmap-update.md` when the change affects priority, scope, Now/Next/Later placement, or release status.
+9. Run `python ${CLAUDE_PLUGIN_ROOT}/scripts/loop_product_os.py validate --root .`.
+10. Commit the `.product` changes per Committing .product Changes in `${CLAUDE_PLUGIN_ROOT}/references/product-os.md`.
+11. Summarize exact changes, artifact gates checked, any decision file written, validation warnings, and follow-up work such as spec drafting or work item planning.
 
 ## Boundaries
 
 Do not implement code, create branches, open pull requests, or create GitHub Issues.
 
-Do not edit feature specs or work items unless the user explicitly asks for those files to be updated too.
+Do not edit feature specs or work items unless the user explicitly asks for those files to be updated too, except the matching status updates required by an explicitly approved spec or plan gate.
 
 Do not silently delete roadmap items. Move unwanted items to `icebox` or `deprecated` only when explicitly requested.
 
